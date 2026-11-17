@@ -86,11 +86,14 @@ class Installation:
         self.melde = lambda *e: None
         self.ergebnisse = {}
         self.hinweise = []                    # Schritte für den Nutzer am Ende
+        self._ausgabe = None                  # gesammelte Ausgabe des laufenden Schritts
 
     # ------------------------------------------------------------------ Hilfen
     def log(self, text):
         for zeile in str(text).splitlines() or [""]:
             self.melde("log", zeile)
+            if self._ausgabe is not None:
+                self._ausgabe.append(zeile)
 
     def lauf(self, cmd, cwd=None, env=None, pruefen=True, timeout=600):
         self.log("$ " + " ".join(cmd))
@@ -287,24 +290,32 @@ class Installation:
         if self.a.leiste_mittig:
             self.log(leiste.mittig(os.path.join(ZIEL, "leiste-vorher.txt")))
 
+    # Bei einem Update rufen die Tool-Installer ihren eigenen Update-Weg auf: dann bleiben
+    # Leiste, Autostart, Standardprogramme und aktivierte Erweiterungen, wie der Nutzer sie
+    # eingestellt hat.
+    def _upd(self, *args):
+        return list(args) if self.a.aktualisieren else []
+
     def _inst_startklar(self):
-        self._sh("startklar", "installieren.sh")
+        self._sh("startklar", "installieren.sh", *self._upd("--update"))
         if self.a.hat("design") and self.a.leiste_mittig and not self.a.aktualisieren:
             # Startklar setzt sich an die Stelle des alten Menüs – wieder mittig
             self.log(leiste.mittig(os.path.join(ZIEL, "leiste-vorher.txt")))
 
     def _inst_filefenster(self):
-        self._sh("filefenster", "installieren.sh")
+        self._sh("filefenster", "installieren.sh", *self._upd("--update"))
 
     def _inst_tray_collapse(self):
         self._sh("tray-collapse", "install.sh")
-        self.log(leiste.applet_hinzufuegen_vor_tray())
+        if not self.a.aktualisieren:
+            self.log(leiste.applet_hinzufuegen_vor_tray())
 
     def _inst_pwa_notifications(self):
-        self._sh("pwa-notifications", "install.sh")
+        self._sh("pwa-notifications", "install.sh", *self._upd("--update"))
 
     def _inst_emoji_panel(self):
-        self._sh("emoji-panel", "installieren.sh")
+        self._sh("emoji-panel", "installieren.sh",
+                 env={"EMOJIPANEL_UPDATE": "1"} if self.a.aktualisieren else None)
 
     def _browser_konfig_vorbereiten(self):
         """Ordner für Native-Messaging-Hosts anlegen, auch wenn der Browser noch
@@ -330,7 +341,7 @@ class Installation:
             self.log(f"PWA-Tray für Teams in {b.name} eingerichtet.")
         self._sh("pwa-tray", "install.sh")
         ext = os.path.join(self._ordner("pwa-tray"), "edge-extension")
-        if os.path.isdir(ext):
+        if os.path.isdir(ext) and not self.a.aktualisieren:
             self.hinweise.append(
                 "PWA-Tray (Teams-Status): in Edge edge://extensions öffnen, "
                 "«Entwicklermodus» einschalten, «Entpackte Erweiterung laden» → "
@@ -345,10 +356,11 @@ class Installation:
         else:
             # Chrome noch nie gestartet: Host-Eintrag selbst schreiben
             self._edge_links_host(d)
-        self.hinweise.append(
-            "PWA link organizer: in Chrome chrome://extensions öffnen, «Entwicklermodus» "
-            "einschalten, «Entpackte Erweiterung laden» → "
-            f"{os.path.join(d, 'extension')}")
+        if not self.a.aktualisieren:
+            self.hinweise.append(
+                "PWA link organizer: in Chrome chrome://extensions öffnen, «Entwicklermodus» "
+                "einschalten, «Entpackte Erweiterung laden» → "
+                f"{os.path.join(d, 'extension')}")
 
     def _edge_links_host(self, d):
         import base64
@@ -378,10 +390,23 @@ class Installation:
             os.makedirs(os.path.dirname(ziel), exist_ok=True)
             shutil.copyfile(eigen, ziel)
             self.log(f"Branding für {katalog.CLOUD_SYNC_NAME} → {ziel}")
-        self._sh("onedrive", "install.sh")
         name = katalog.CLOUD_SYNC_NAME
-        self.hinweise.append(f"{name}: über das Startmenü «{name}» starten "
-                             "und das Microsoft-Konto anmelden.")
+        if not self.a.aktualisieren:
+            self._sh("onedrive", "install.sh")
+            self.hinweise.append(f"{name}: über das Startmenü «{name}» starten "
+                                 "und das Microsoft-Konto anmelden.")
+            return
+        # Update wie beim eigenen Updater: ohne Rückfragen, Programm danach neu starten.
+        # Nemo wird nicht beendet (offene Fenster) – nur ein Hinweis, falls nötig.
+        lief = _cloud_sync_laeuft()
+        self._ausgabe = []
+        self._sh("onedrive", "install.sh", "--update")
+        ausgabe, self._ausgabe = self._ausgabe, None
+        if any("ODM_EXTENSION_CHANGED" in z for z in ausgabe):
+            self.hinweise.append("Dateimanager einmal ganz schliessen und neu öffnen, damit die "
+                                 f"Statussymbole von {name} aktualisiert werden.")
+        if lief:
+            self.log(_cloud_sync_neu_starten())
 
     # ------------------------------------------------------------------ Abschluss
     def _abschluss(self):
@@ -413,14 +438,15 @@ class Installation:
         if self.a.erinnern and not self.a.aktualisieren and marke.HAT_DANKE:
             stand_setzen(installiert_am=time.time(), nur_wenn_neu=True)
         verwaltet_schreiben(list(komp))
+        if self.a.aktualisieren:
+            self.hinweise.append(f"{marke.PRODUKT} ist jetzt auf Version {version()}.")
+            return
         if self.a.webapps:
             namen = ", ".join(f"{katalog.WEBAPP_NACH_ID[w].name} ({katalog.BROWSER_NACH_ID[b].name})"
                               for w, b in self.a.webapps.items())
             self.hinweise.append(
                 f"Web-Apps {namen}: erscheinen beim nächsten Start des Browsers im "
                 "Startmenü. Danach in der App anmelden.")
-        if self.a.aktualisieren:
-            self.hinweise.append(f"{marke.PRODUKT} ist jetzt auf Version {version()}.")
         if any(k in self.a.komponenten for k in ("design", "tray-collapse", "pwa-notifications",
                                                   "startklar")):
             self.hinweise.append("Einmal ab- und wieder anmelden, damit alles überall wirkt.")
@@ -511,24 +537,53 @@ VERWALTET = os.path.join(CONF, "style-kit", "verwaltet.json")
 UPDATE_AUTOSTART = os.path.join(CONF, "autostart", f"{marke.KURZ}-update.desktop")
 
 
+def _verwaltet_lesen():
+    try:
+        with open(VERWALTET, encoding="utf-8") as f:
+            d = json.load(f)
+        return d if isinstance(d, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
 def verwaltet_schreiben(komponenten):
     """Den Programmen sagen, dass Updates über dieses Kit kommen (sie suchen dann nicht selbst).
-    Ohne Komponenten: Datei und Update-Prüfung beim Anmelden entfernen."""
-    if not komponenten:
-        for p in (VERWALTET, UPDATE_AUTOSTART):
-            try:
-                os.unlink(p)
-            except OSError:
-                pass
-        return
-    os.makedirs(os.path.dirname(VERWALTET), exist_ok=True)
+
+    Nur Kits mit Update-Quelle (branding «update_repo») übernehmen die Updates; ohne Quelle
+    aktualisieren sich die Programme weiter selbst. Mehrere Kits teilen sich die Datei:
+    unter «kits» steht jedes Kit für sich, «komponenten» ist die Vereinigung (das lesen
+    die Programme), «kit»/«verwalten» zeigen auf das Kit, das zuletzt geschrieben hat."""
+    eigene = sorted(komponenten) if (marke.B.get("update_repo") or "").strip() else []
     main = os.path.join(ZIEL, "installer", "main.py")
-    tmp = VERWALTET + ".neu"
-    with open(tmp, "w", encoding="utf-8") as f:
-        json.dump({"kit": marke.PRODUKT, "komponenten": sorted(komponenten),
-                   "verwalten": ["/usr/bin/python3", "-I", main, "--verwalten"]},
-                  f, indent=2, ensure_ascii=False)
-    os.replace(tmp, VERWALTET)
+    d = _verwaltet_lesen()
+    kits = d.get("kits") if isinstance(d.get("kits"), dict) else {}
+    if eigene:
+        kits[marke.KURZ] = {"kit": marke.PRODUKT, "komponenten": eigene,
+                            "verwalten": ["/usr/bin/python3", "-I", main, "--verwalten"]}
+    else:
+        kits.pop(marke.KURZ, None)
+    kits = {k: v for k, v in kits.items() if isinstance(v, dict) and v.get("komponenten")}
+    if kits:
+        os.makedirs(os.path.dirname(VERWALTET), exist_ok=True)
+        aktuell = kits.get(marke.KURZ) or next(iter(kits.values()))
+        alle = sorted({c for v in kits.values() for c in v.get("komponenten", [])})
+        tmp = VERWALTET + ".neu"
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump({"kit": aktuell.get("kit"), "komponenten": alle,
+                       "verwalten": aktuell.get("verwalten"), "kits": kits},
+                      f, indent=2, ensure_ascii=False)
+        os.replace(tmp, VERWALTET)
+    else:
+        try:
+            os.unlink(VERWALTET)
+        except OSError:
+            pass
+    if not komponenten:
+        try:
+            os.unlink(UPDATE_AUTOSTART)
+        except OSError:
+            pass
+        return
     if (marke.B.get("update_repo") or "").strip() or marke.HAT_DANKE:
         os.makedirs(os.path.dirname(UPDATE_AUTOSTART), exist_ok=True)
         with open(UPDATE_AUTOSTART, "w", encoding="utf-8") as f:
@@ -536,11 +591,42 @@ def verwaltet_schreiben(komponenten):
 Type=Application
 Name={marke.PRODUKT} – Updates
 Comment=Beim Anmelden nach einer neuen Version suchen
-Exec=/usr/bin/python3 -I {main} --update-pruefen
+Exec=/usr/bin/python3 -I "{main}" --update-pruefen
 Icon={os.path.join(ZIEL, "branding", "symbol.svg")}
 NoDisplay=true
 X-GNOME-Autostart-Delay=90
 """)
+
+
+def _cloud_sync_laeuft():
+    p = subprocess.run(["pgrep", "-u", str(os.getuid()), "-f", r"python3 -m onedrive_mint( |$)"],
+                       capture_output=True)
+    return p.returncode == 0
+
+
+def _cloud_sync_neu_starten():
+    """Laufenden Client beenden und neu starten (wie dessen eigener Updater): über
+    systemd-run, damit er unabhängig von diesem Installer weiterläuft."""
+    exe = os.path.expanduser("~/.local/bin/onedrive-mint")
+    if not os.path.exists(exe):
+        return "Cloud Sync: Startbefehl fehlt, Neustart übersprungen."
+    subprocess.run([exe, "--quit"], capture_output=True, timeout=30)
+    for _ in range(60):
+        if not _cloud_sync_laeuft():
+            break
+        time.sleep(0.5)
+    if shutil.which("systemd-run"):
+        env = [f"--setenv={k}={os.environ[k]}" for k in
+               ("DISPLAY", "WAYLAND_DISPLAY", "XAUTHORITY", "DBUS_SESSION_BUS_ADDRESS",
+                "XDG_CURRENT_DESKTOP", "XDG_SESSION_TYPE", "XDG_RUNTIME_DIR", "PATH", "LANG")
+               if os.environ.get(k)]
+        p = subprocess.run(["systemd-run", "--user", "--collect", "--quiet", *env, exe,
+                            "--background"], capture_output=True, text=True, timeout=30)
+        if p.returncode == 0:
+            return "Cloud Sync neu gestartet."
+    subprocess.Popen([exe, "--background"], start_new_session=True, stdin=subprocess.DEVNULL,
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    return "Cloud Sync neu gestartet."
 
 
 def _entfernen_starter():
@@ -552,7 +638,7 @@ def _entfernen_starter():
 Type=Application
 Name={marke.PRODUKT}
 Comment=Komponenten hinzufügen oder entfernen
-Exec=/usr/bin/python3 -I {ZIEL}/installer/main.py --verwalten
+Exec=/usr/bin/python3 -I "{ZIEL}/installer/main.py" --verwalten
 Icon={logo}
 Categories=Settings;
 Terminal=false

@@ -33,6 +33,7 @@ RICHTLINIEN_ORDNER = {"edge": "/etc/opt/edge/policies/managed",
 QUELLEN = {
     "edge": {
         "schluessel_url": "https://packages.microsoft.com/keys/microsoft.asc",
+        "fingerabdruck": "BC528686B50D79E339D3721CEB3E94ADBE1229CF",
         "schluessel": "/usr/share/keyrings/microsoft-edge.gpg",
         "datei": "/etc/apt/sources.list.d/microsoft-edge.sources",
         "inhalt": ("### THIS FILE IS AUTOMATICALLY CONFIGURED ###\n"
@@ -46,6 +47,7 @@ QUELLEN = {
     },
     "chrome": {
         "schluessel_url": "https://dl.google.com/linux/linux_signing_key.pub",
+        "fingerabdruck": "EB4C1BFD4F042F6DDDCCEC917721F63BD38B4796",
         "schluessel": "/usr/share/keyrings/google-chrome.gpg",
         "datei": "/etc/apt/sources.list.d/google-chrome.sources",
         "inhalt": ("### THIS FILE IS AUTOMATICALLY CONFIGURED ###\n"
@@ -59,6 +61,13 @@ QUELLEN = {
     },
 }
 RCLONE_MIN = (1, 63)
+# Fest eingetragene rclone-Version mit SHA-256 (aus https://downloads.rclone.org/<v>/SHA256SUMS).
+# Neue Version: Werte hier ersetzen – nie ungeprüft «current» installieren.
+RCLONE_VERSION = "v1.76.0"
+RCLONE_SHA256 = {
+    "amd64": "9db7ee9b725bce7cdd195b9183449a4c6fb93cad3e6578e70b87c0bc7f6062e9",
+    "arm64": "c486d404ecbc4bb3d54052a0efaf9e652cf0d2c645e4523f7a2aefa112fe029c",
+}
 
 
 def schritt(text):
@@ -77,10 +86,46 @@ def lauf(cmd, **kw):
         raise RuntimeError(f"{cmd[0]} endete mit Fehler {p.returncode}")
 
 
+class _NurHttps(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        if not newurl.lower().startswith("https://"):
+            raise RuntimeError(f"Weiterleitung auf unsichere Adresse abgelehnt: {newurl}")
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
 def laden(url, ziel):
+    if not url.startswith("https://"):
+        raise RuntimeError(f"Nur https erlaubt: {url}")
     sag(f"Lade {url}")
-    with urllib.request.urlopen(url, timeout=60) as r, open(ziel, "wb") as f:
+    # eigene Kennung: downloads.rclone.org sperrt «Python-urllib»
+    req = urllib.request.Request(url, headers={"User-Agent": "style-kit-installer"})
+    with urllib.request.build_opener(_NurHttps).open(req, timeout=60) as r, \
+            open(ziel, "wb") as f:
         shutil.copyfileobj(r, f)
+
+
+def sha256(pfad):
+    import hashlib
+    h = hashlib.sha256()
+    with open(pfad, "rb") as f:
+        for block in iter(lambda: f.read(1 << 16), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
+def fingerabdruecke(asc):
+    """Fingerabdrücke der Hauptschlüssel in einer Schlüsseldatei."""
+    p = subprocess.run(["gpg", "--batch", "--with-colons", "--show-keys", asc], env=ENV,
+                       capture_output=True, text=True)
+    fpr, nach_pub = [], False
+    for z in p.stdout.splitlines():
+        f = z.split(":")
+        if f[0] == "pub":
+            nach_pub = True
+        elif f[0] == "fpr" and nach_pub:
+            fpr.append(f[9].upper())
+            nach_pub = False
+    return fpr
 
 
 def installiert(paket):
@@ -100,6 +145,10 @@ def quelle_einrichten(bid):
     with tempfile.TemporaryDirectory() as tmp:
         asc = os.path.join(tmp, "key.asc")
         laden(q["schluessel_url"], asc)
+        fpr = fingerabdruecke(asc)
+        if fpr != [q["fingerabdruck"]]:
+            raise RuntimeError(f"Signaturschlüssel für {bid} hat unerwartete Fingerabdrücke "
+                               f"{fpr} – Paketquelle nicht eingerichtet.")
         gpg = os.path.join(tmp, "key.gpg")
         lauf(["gpg", "--batch", "--yes", "--dearmor", "-o", gpg, asc])
         os.makedirs(os.path.dirname(q["schluessel"]), exist_ok=True)
@@ -139,7 +188,10 @@ def rclone_installieren():
     with tempfile.TemporaryDirectory() as tmp:
         os.chmod(tmp, 0o755)  # apt liest die Datei als Benutzer _apt
         deb = os.path.join(tmp, "rclone.deb")
-        laden(f"https://downloads.rclone.org/rclone-current-linux-{arch}.deb", deb)
+        laden(f"https://downloads.rclone.org/{RCLONE_VERSION}/"
+              f"rclone-{RCLONE_VERSION}-linux-{arch}.deb", deb)
+        if sha256(deb) != RCLONE_SHA256[arch]:
+            raise RuntimeError("rclone-Paket hat eine falsche Prüfsumme – nicht installiert.")
         os.chmod(deb, 0o644)
         lauf(["apt-get", "install", "-y", deb])
 

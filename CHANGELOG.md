@@ -1,5 +1,15 @@
 # Änderungen
 
+## 1.1.3
+
+- Aktualisieren lässt Einstellungen in Ruhe: Startklar, FileFenster, PWA-Benachrichtigungen und Emoji-Panel laufen im Update-Modus (Leiste, Standard-Dateimanager, Autostart und abgeschaltete Erweiterungen bleiben), der Überlauf-Pfeil wird nicht wieder eingefügt, keine alten «Noch zu tun»-Hinweise mehr.
+- Cloud Sync wird beim Aktualisieren ohne Rückfragen erneuert und danach neu gestartet; Nemo-Fenster bleiben offen.
+- Systemteil: rclone in fester Version mit Prüfsumme (vorher scheiterte der Download an einer Sperre des Servers), Signaturschlüssel von Edge und Chrome werden am Fingerabdruck geprüft, Downloads nur über https.
+- verwaltet.json für mehrere Kits; nur Kits mit Update-Quelle übernehmen die Updates der Programme.
+- Updates des Kits sind signiert (Ed25519); ein Paket ohne gültige Signatur wird abgelehnt.
+- Die Programme im Kit tragen die Datei .kit-verwaltet: Ihre eigene Update-Suche bleibt fest abgeschaltet.
+- Enthalten: Emoji-Panel 1.1.1, PWA-Tray 1.1.1 (Teams-Diagnose nur noch auf Wunsch), PWA-Benachrichtigungen 1.5.1, Cloud Sync 2.4.2.
+
 ## 1.1.2
 
 - Nach der Installation: «Gefällt dir das Style Kit?» mit Stern auf GitHub und Unterstützen per PayPal (5 / 10 / 20 € oder anderer Betrag). Zwei Wochen später einmalig eine Erinnerung, danach nie wieder.

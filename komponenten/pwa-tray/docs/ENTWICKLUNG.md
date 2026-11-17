@@ -32,7 +32,7 @@
 
 - Debug-Ausgabe: `PWA_TRAY_DEBUG=1 ./pwa_tray.py`
 - Was die Teams-Seite zuletzt gemeldet hat: `~/.cache/pwa-tray/last-status.json`
-- Welche Beschriftungen die Seite liefert (für die Status-Erkennung): `~/.cache/pwa-tray/diag.json`
+- Welche Beschriftungen die Seite liefert (für die Status-Erkennung): `touch ~/.cache/pwa-tray/diagnose-an`, dann steht es nach spätestens 10 Minuten in `~/.cache/pwa-tray/diag.json` (nur zur Fehlersuche, danach `diagnose-an` wieder löschen)
 - Meldet die Seite 3 Minuten lang nichts, zeigt das Symbol wieder das normale Teams-Logo.
 
 ## Verwaltung durch ein Style Kit

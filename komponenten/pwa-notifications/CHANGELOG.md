@@ -1,5 +1,10 @@
 # Änderungen
 
+## 1.5.1
+
+- install.sh --update: Eine abgeschaltete Erweiterung bleibt bei einem Update abgeschaltet.
+- Kit-Fassung: Datei .kit-verwaltet schaltet die eigene Update-Suche fest ab (auch ohne verwaltet.json).
+
 ## 1.5.0
 
 - Verwaltung durch ein Style Kit: Steht «pwa-notifications» in `~/.config/style-kit/verwaltet.json`, sucht und installiert die Erweiterung keine Updates mehr selbst. «Jetzt nach Updates suchen» und die Einstellungsseite sagen dann «Updates für PWA-Benachrichtigungen kommen über das …» und bieten einen Knopf zum Öffnen des Kits.

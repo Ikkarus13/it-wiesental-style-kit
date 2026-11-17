@@ -2,6 +2,7 @@
 # Installiert die Cinnamon-Erweiterung «PWA-Benachrichtigungen» für den aktuellen Benutzer.
 #
 #   ./install.sh                 Dateien kopieren (normale Installation, Updates über die Erweiterung)
+#   ./install.sh --update        Update: abgeschaltete Erweiterung bleibt abgeschaltet
 #   ./install.sh --entwicklung   Symlink auf diesen Ordner: Änderungen sind nach dem Neuladen aktiv,
 #                                Updates kommen per «git pull»
 set -euo pipefail
@@ -30,7 +31,10 @@ fi
 
 # Aktivieren bzw. neu laden, falls schon aktiv
 current="$(gsettings get org.cinnamon enabled-extensions)"
-if [[ "$current" == *"'$UUID'"* ]]; then
+if [ "${1:-}" = "--update" ] && [[ "$current" != *"'$UUID'"* ]]; then
+    # Update (z. B. über ein Style Kit): eine abgeschaltete Erweiterung bleibt abgeschaltet
+    echo "Erweiterung ist abgeschaltet – bleibt so."
+elif [[ "$current" == *"'$UUID'"* ]]; then
     gdbus call --session --dest org.Cinnamon --object-path /org/Cinnamon \
         --method org.Cinnamon.ReloadXlet "$UUID" "EXTENSION" >/dev/null 2>&1 \
         || echo "Bitte Cinnamon neu laden (Strg+Alt+Esc), damit die neue Version aktiv wird."

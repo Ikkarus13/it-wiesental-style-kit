@@ -32,7 +32,7 @@ def _kit_datei():
     return os.path.join(base, 'style-kit', 'verwaltet.json')
 
 
-def kit_info():
+def _kit_info_datei():
     """{'kit': Name, 'verwalten': Befehl oder None}, wenn ein Style Kit das Panel verwaltet."""
     try:
         with open(_kit_datei(), encoding='utf-8') as f:
@@ -48,6 +48,24 @@ def kit_info():
     if not (isinstance(cmd, list) and cmd and all(isinstance(x, str) and x for x in cmd)):
         cmd = None
     return {'kit': kit.strip(), 'verwalten': cmd}
+
+
+_KIT_MARKE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.kit-verwaltet')
+
+
+def kit_info():
+    """Wie _kit_info_datei(); zusätzlich gilt das Programm als verwaltet, wenn die Kit-Fassung
+    die Datei .kit-verwaltet mitbringt (Inhalt: Name des Kits). Die eigene Update-Funktion
+    bleibt dann auch abgeschaltet, wenn verwaltet.json fehlt oder gelöscht wurde."""
+    info = _kit_info_datei()
+    if info:
+        return info
+    try:
+        with open(_KIT_MARKE, encoding='utf-8') as f:
+            name = f.read().strip()[:80]
+    except OSError:
+        return None
+    return {'kit': name or 'Style Kit', 'verwalten': None}
 
 
 def kit_verwaltet():

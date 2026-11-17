@@ -3,7 +3,9 @@
 
 Edge startet dieses Skript pro Nachricht, schickt JSON (4-Byte-Laenge + Text) ueber stdin.
 Weitergereicht wird per D-Bus an die laufende PWA-Tray-Anwendung (Gio-Aktion "web-status").
-Diagnose-Nachrichten landen zusaetzlich in ~/.cache/pwa-tray/diag.json.
+Diagnose-Nachrichten (Seitentitel, Beschriftungen aus Teams) werden nur gespeichert, wenn die
+Datei ~/.cache/pwa-tray/diagnose-an existiert: dann in ~/.cache/pwa-tray/diag.json (nur fuer den
+Benutzer lesbar). Sonst werden sie verworfen und eine alte diag.json geloescht.
 """
 import json
 import os
@@ -39,7 +41,16 @@ def forward(msg):
         with open(os.path.join(d, "last-status.json"), "w") as f:
             json.dump(msg, f, ensure_ascii=False)
     if msg.get("type") == "diag":
-        with open(os.path.join(d, "diag.json"), "w") as f:
+        pfad = os.path.join(d, "diag.json")
+        if not os.path.exists(os.path.join(d, "diagnose-an")):
+            try:
+                os.unlink(pfad)          # enthaelt evtl. Namen/Nachrichten – nicht aufheben
+            except OSError:
+                pass
+            return True
+        fd = os.open(pfad, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        os.fchmod(fd, 0o600)
+        with os.fdopen(fd, "w") as f:
             json.dump(msg, f, indent=1, ensure_ascii=False)
         return True
     bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)

@@ -25,12 +25,25 @@ PY
 TITEL="$(python3 -c 'import json; print(json.load(open("branding/branding.json"))["produkt"])')"
 git tag -a "v$V" -m "Version $V"
 git push -q origin HEAD --follow-tags
+# Signatur (Ed25519): Hat das Kit einen öffentlichen Schlüssel (branding/release_key.pem),
+# prüft die Update-Funktion jedes Paket damit – dann muss hier signiert werden.
+KURZ="$(basename "$PAKET" | sed -E 's/-[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz$//')"
+SCHLUESSEL="${STYLE_KIT_SIGNING_KEY:-$HOME/.config/style-kit-release/$KURZ.pem}"
+SIGS=()
+if [ -f branding/release_key.pem ]; then
+    [ -f "$SCHLUESSEL" ] || { echo "Privater Schlüssel $SCHLUESSEL fehlt – ohne Signatur kein Release." >&2; exit 1; }
+    openssl pkeyutl -sign -inkey "$SCHLUESSEL" -rawin -in "$PAKET" -out "$PAKET.sig"
+    openssl pkeyutl -verify -pubin -inkey branding/release_key.pem -rawin -in "$PAKET" \
+        -sigfile "$PAKET.sig" | grep -q Success || { echo "Signatur passt nicht zu branding/release_key.pem." >&2; exit 1; }
+    SIGS=("$PAKET.sig")
+fi
 # Zusätzlich unter festem Namen, damit …/releases/latest/download/<name>.tar.gz
 # immer auf die neueste Version zeigt (Download-Link für die Homepage).
 FEST="dist/$(basename "$PAKET" | sed -E 's/-[0-9]+\.[0-9]+\.[0-9]+\.tar\.gz$/.tar.gz/')"
 cp "$PAKET" "$FEST"
 (cd dist && sha256sum "$(basename "$FEST")" > "$(basename "$FEST").sha256")
-gh release create "v$V" "$PAKET" "$PAKET.sha256" "$FEST" "$FEST.sha256" \
+[ ${#SIGS[@]} -gt 0 ] && cp "$PAKET.sig" "$FEST.sig" && SIGS+=("$FEST.sig")
+gh release create "v$V" "$PAKET" "$PAKET.sha256" "${SIGS[@]}" "$FEST" "$FEST.sha256" \
     --title "$TITEL $V" --notes "$NOTES
 
 **Enthaltene Komponenten**

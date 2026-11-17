@@ -5,9 +5,9 @@
     "ref": "49e30de"
   },
   "emoji-panel": {
-    "version": "1.1.0",
+    "version": "1.1.1",
     "quelle": "Ikkarus13/emoji-panel",
-    "ref": "14f803945bd5"
+    "ref": "dd26bafdcf08"
   },
   "filefenster": {
     "version": "0.16.0",
@@ -15,9 +15,9 @@
     "ref": "4afc78a30a4b"
   },
   "onedrive": {
-    "version": "2.4.1",
+    "version": "2.4.2",
     "quelle": "Ikkarus13/cloud-sync",
-    "ref": "1660f0af1e68"
+    "ref": "c52a0cd77efb"
   },
   "pwa-link-organizer": {
     "version": "1.2.1",
@@ -25,14 +25,14 @@
     "ref": "4d09b842d007"
   },
   "pwa-notifications": {
-    "version": "1.5.0",
+    "version": "1.5.1",
     "quelle": "Ikkarus13/pwa-notifications",
-    "ref": "858ad96c157e"
+    "ref": "e2a93da28009"
   },
   "pwa-tray": {
-    "version": "1.1.0",
+    "version": "1.1.1",
     "quelle": "Ikkarus13/pwa-tray",
-    "ref": "221c4ecaf7a7"
+    "ref": "4623c6f2f292"
   },
   "startklar": {
     "version": "0.4.0",

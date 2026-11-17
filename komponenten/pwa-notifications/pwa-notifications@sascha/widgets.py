@@ -16,7 +16,21 @@ KIT_KENNUNG = 'pwa-notifications'
 
 
 def kit_info():
-    """Wie kitInfo() in updater.js: {'kit', 'verwalten'} wenn ein Style Kit verwaltet."""
+    """Wie kitInfo() in updater.js: {'kit', 'verwalten'} wenn ein Style Kit verwaltet –
+    über verwaltet.json oder die Datei .kit-verwaltet der Kit-Fassung."""
+    info = _kit_info_datei()
+    if info:
+        return info
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '.kit-verwaltet'),
+                  encoding='utf-8') as f:
+            name = f.read().strip()[:80]
+    except OSError:
+        return None
+    return {'kit': name or 'Style Kit', 'verwalten': None}
+
+
+def _kit_info_datei():
     base = os.environ.get('XDG_CONFIG_HOME') or os.path.expanduser('~/.config')
     try:
         with open(os.path.join(base, 'style-kit', 'verwaltet.json'), encoding='utf-8') as f:

@@ -52,8 +52,27 @@ function kitDatei() {
     return GLib.build_filenamev([base, 'style-kit', 'verwaltet.json']);
 }
 
+// Kit-Fassung: Datei .kit-verwaltet neben metadata.json (Inhalt: Name des Kits). Dann bleibt die
+// eigene Update-Funktion auch abgeschaltet, wenn verwaltet.json fehlt oder gelöscht wurde.
+function kitMarke() {
+    try {
+        let [ok, bytes] = GLib.file_get_contents(GLib.build_filenamev(
+            [GLib.get_user_data_dir(), 'cinnamon', 'extensions', 'pwa-notifications@sascha', '.kit-verwaltet']));
+        if (!ok)
+            return null;
+        let name = new TextDecoder().decode(bytes).trim().slice(0, 80);
+        return { kit: name || 'Style Kit', verwalten: null };
+    } catch (e) {
+        return null;
+    }
+}
+
 // { kit, verwalten } wenn ein Style Kit die Erweiterung verwaltet, sonst null
 function kitInfo() {
+    return kitInfoDatei() || kitMarke();
+}
+
+function kitInfoDatei() {
     let data;
     try {
         let [ok, bytes] = GLib.file_get_contents(kitDatei());

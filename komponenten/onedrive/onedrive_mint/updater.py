@@ -44,7 +44,14 @@ def kit_verwaltet():
             return str(d.get("kit") or "Style Kit")
     except (OSError, ValueError, AttributeError, TypeError):
         pass
-    return None
+    # Kit-Fassung: Datei .kit-verwaltet im Programmordner (Inhalt: Name des Kits) – gilt auch,
+    # wenn verwaltet.json fehlt oder gelöscht wurde
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".kit-verwaltet"),
+                  encoding="utf-8") as f:
+            return f.read().strip()[:80] or "Style Kit"
+    except OSError:
+        return None
 
 
 def kit_befehl():

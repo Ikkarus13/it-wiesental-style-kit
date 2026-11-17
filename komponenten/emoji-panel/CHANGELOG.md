@@ -1,5 +1,9 @@
 # Änderungen
 
+## 1.1.1
+
+- Kit-Fassung: Liegt die Datei .kit-verwaltet im Programmordner, bleibt die eigene Update-Suche fest abgeschaltet (auch ohne verwaltet.json).
+
 ## 1.1.0
 
 - Verwaltung durch ein Style Kit: Steht «emoji-panel» in `~/.config/style-kit/verwaltet.json`, sucht und installiert das Emoji-Panel keine Updates mehr selbst. `emoji-panel --update` und die Einstellungen sagen dann «Updates für Emoji-Panel kommen über das …» und bieten einen Knopf zum Öffnen des Kits.

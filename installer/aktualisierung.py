@@ -26,6 +26,9 @@ from . import ablauf, marke
 REPO = (marke.B.get("update_repo") or "").strip()
 # WST_UPDATE_API nur für Tests (lokaler Server statt GitHub)
 API = os.environ.get("WST_UPDATE_API") or f"https://api.github.com/repos/{REPO}/releases/latest"
+# Öffentlicher Ed25519-Schlüssel des Kits: Ist er vorhanden, wird jedes Update-Paket
+# vor dem Entpacken gegen die .sig aus dem Release geprüft (sonst kein Update).
+SCHLUESSEL = os.path.join(marke.ORDNER, "release_key.pem")
 CACHE = os.path.join(os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache"),
                      marke.KURZ)
 _MAX_PAKET = 200 * 1024 * 1024
@@ -75,23 +78,49 @@ def pruefen():
     assets = {a.get("name"): a.get("browser_download_url") for a in data.get("assets") or []}
     info = {"version": version, "notizen": (data.get("body") or "").strip(),
             "paket": assets.get(name), "pruefsumme": assets.get(name + ".sha256"),
+            "signatur": assets.get(name + ".sig"),
             "name": name, "seite": data.get("html_url") or ""}
     _stand_setzen(geprueft=time.time())
     if not neuer(version):
         return None
     if not info["paket"] or not info["pruefsumme"]:
         raise Fehler(f"Version {version}: Paket oder Prüfsumme fehlt im Release.")
+    if os.path.exists(SCHLUESSEL) and not info["signatur"]:
+        raise Fehler(f"Version {version} ist nicht signiert – Update abgelehnt.")
     return info
 
 
+def _signatur_pruefen(paket, sig):
+    import subprocess
+    exe = shutil.which("openssl")
+    if not exe:
+        raise Fehler("openssl fehlt – die Signatur des Updates lässt sich nicht prüfen.")
+    r = subprocess.run([exe, "pkeyutl", "-verify", "-pubin", "-inkey", SCHLUESSEL, "-rawin",
+                        "-in", paket, "-sigfile", sig], capture_output=True, text=True, timeout=60)
+    if r.returncode != 0 or "Success" not in r.stdout:
+        raise Fehler("Signatur des Update-Pakets ist ungültig – Update abgebrochen.")
+
+
 def holen(info, log=print):
-    """Paket laden, Prüfsumme kontrollieren, entpacken. Gibt den Paketordner zurück."""
+    """Paket laden, Prüfsumme und Signatur kontrollieren, entpacken. Gibt den Paketordner zurück."""
+    try:
+        return _holen(info, log)
+    except Fehler:
+        raise
+    except (urllib.error.URLError, OSError, ValueError, tarfile.TarError) as e:
+        raise Fehler(f"Update konnte nicht geladen werden: {getattr(e, 'reason', e)}") from e
+
+
+def _holen(info, log):
     os.makedirs(CACHE, exist_ok=True)
     arbeit = tempfile.mkdtemp(prefix="update-", dir=CACHE)
     paket = os.path.join(arbeit, info["name"])
     log(f"Lade {info['name']} …")
     with _get(info["pruefsumme"], accept="application/octet-stream") as r:
-        soll = r.read(4096).decode("ascii", "replace").split()[0].lower()
+        teile = r.read(4096).decode("ascii", "replace").split()
+    soll = teile[0].lower() if teile else ""
+    if not re.fullmatch(r"[0-9a-f]{64}", soll):
+        raise Fehler("Prüfsummendatei des Releases ist ungültig.")
     h = hashlib.sha256()
     groesse = 0
     with _get(info["paket"], accept="application/octet-stream", timeout=60) as r, \
@@ -107,6 +136,14 @@ def holen(info, log=print):
             f.write(block)
     if h.hexdigest() != soll:
         raise Fehler("Prüfsumme stimmt nicht – Update abgebrochen.")
+    if os.path.exists(SCHLUESSEL):
+        if not info.get("signatur"):
+            raise Fehler("Update ist nicht signiert – abgebrochen.")
+        sig = paket + ".sig"
+        with _get(info["signatur"], accept="application/octet-stream") as r, open(sig, "wb") as f:
+            f.write(r.read(4096))
+        _signatur_pruefen(paket, sig)
+        log("Signatur in Ordnung.")
     log(f"Prüfsumme in Ordnung ({groesse // 1024} KB).")
     ziel = os.path.join(arbeit, "paket")
     os.makedirs(ziel)
@@ -116,6 +153,13 @@ def holen(info, log=print):
     ordner = [d for d in ordner if os.path.isfile(os.path.join(d, "installer", "main.py"))]
     if len(ordner) != 1:
         raise Fehler("Paket hat einen unerwarteten Aufbau.")
+    try:
+        with open(os.path.join(ordner[0], "VERSION"), encoding="utf-8") as f:
+            v = f.read().strip()
+    except OSError:
+        v = ""
+    if v != info["version"]:
+        raise Fehler(f"Paket enthält Version {v or '?'} statt {info['version']} – abgebrochen.")
     return ordner[0]
 
 
