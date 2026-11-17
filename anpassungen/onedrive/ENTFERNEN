@@ -1,0 +1,3 @@
+# Nur für die Entwicklung, nicht im Kit
+docs/ENTWICKLUNG.md
+tools/make_release.sh

@@ -1,0 +1,31 @@
+/* Drag & Drop (dnd.py): Bild am Mauszeiger und Ablageziele */
+window.drag-icon {
+  background-color: transparent;
+}
+window.drag-icon label {
+  font-family: "Selawik", "Segoe UI", "Noto Sans", sans-serif;
+}
+window.drag-icon label.drag-count {
+  background-color: @accent;
+  color: #ffffff;
+  border-radius: 10px;
+  min-width: 12px;
+  min-height: 20px;
+  padding: 0 4px;
+  font-size: 9pt;
+  font-weight: bold;
+}
+window.drag-icon label.drag-label {
+  background-color: @menu_bg;
+  color: @text;
+  border: 1px solid @border;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 9pt;
+}
+window.filefenster .tab.drop-hover:not(.active) .tab-bg {
+  background-color: @tab_hover;
+  border-radius: 6px;
+  margin-top: 6px;
+  margin-bottom: 2px;
+}

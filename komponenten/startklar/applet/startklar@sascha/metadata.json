@@ -1,0 +1,8 @@
+{
+    "uuid": "startklar@sascha",
+    "name": "Startklar",
+    "description": "Startknopf für das Startmenü im Stil von Windows 11 (Startklar)",
+    "max-instances": -1,
+    "version": "0.4.0",
+    "author": "sascha"
+}

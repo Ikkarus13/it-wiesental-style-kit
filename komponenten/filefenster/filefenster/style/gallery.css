@@ -1,0 +1,9 @@
+/* Katalog (gallery.py): die Bilder zeichnet die Ansicht selbst (Palette aus
+   theme.py), hier nur Hintergrund und Rahmen. */
+
+window.filefenster scrolledwindow.gallery-view,
+window.filefenster scrolledwindow.gallery-view .gallery-canvas {
+  background-color: @content_bg;
+  border: none;
+  outline: none;
+}

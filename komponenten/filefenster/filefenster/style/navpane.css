@@ -1,0 +1,37 @@
+/* Navigationsbereich links (navpane.py).
+   Hover/Auswahl zeichnet navpane.RowHighlighter selbst (abgerundet),
+   daher sind die GTK-Zeilenhintergründe hier transparent. */
+
+window.filefenster scrolledwindow.nav-pane {
+  background-color: @pane_bg;
+  border: none;
+}
+
+window.filefenster treeview.view.nav-tree {
+  background-color: transparent;
+  background-image: none;
+  color: @text;
+  border: none;
+  outline-width: 0;
+  -GtkTreeView-vertical-separator: 0;
+  -GtkTreeView-horizontal-separator: 0;
+  -GtkTreeView-expander-size: 0;
+}
+window.filefenster treeview.view.nav-tree:hover,
+window.filefenster treeview.view.nav-tree:selected,
+window.filefenster treeview.view.nav-tree:selected:focus,
+window.filefenster treeview.view.nav-tree:selected:backdrop,
+window.filefenster treeview.view.nav-tree:backdrop {
+  background-color: transparent;
+  background-image: none;
+  color: @text;
+  outline-width: 0;
+}
+
+/* Trenner zwischen den Gruppen: nur die Zeilenhöhe kommt von hier,
+   die Linie (mit Einzug) zeichnet NavPane._draw_separators selbst. */
+window.filefenster treeview.view.nav-tree.separator {
+  min-height: 17px;
+  color: transparent;
+  background: none;
+}

@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "PWA link organizer",
+  "version": "1.2.1",
+  "description": "Öffnet Links aus der Outlook-App in Microsoft Edge statt in einem Chrome-Tab (lokal über einen Native-Messaging-Host).",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvedKK4Qu/vOEXZKjYcn8tIuZ+FSQJ5aQ8ZXUc9DpcI/6aYMM6+PtPjWo9zbvsAiCEobJSqpk2JweqK2e5CG4JrUw512UYpabBmozhua3lwSZZZr9vjH7NVPkuqocffOcfQKekCYhN4tI2jUguuUr8Y3ZB6HBer9opDjQjtrs25sYXbJKBlKerkf3NW6je+SGc4+IUpkW7LxdD4CR/d3kzs+i6NIfrJmQFgcI0iC4tM/3SazRpPxQUvjWM5K+sJ2bzdNY8bIYcoAZ6ZmcyyLzAEIg7/kgNAg4p+bG4EjBskPz2Cbr8+rlPw9JsiUr4I3qNR+lbxk8qJzstsXZVWXYRwIDAQAB",
+  "minimum_chrome_version": "116",
+  "permissions": [
+    "nativeMessaging",
+    "storage",
+    "webNavigation"
+  ],
+  "host_permissions": [
+    "https://outlook.cloud.microsoft/*",
+    "https://outlook.office.com/*",
+    "https://outlook.office365.com/*",
+    "https://outlook.live.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  },
+  "action": {
+    "default_title": "PWA link organizer: Edge-Profil wählen",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

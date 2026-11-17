@@ -1,0 +1,25 @@
+#!/bin/bash
+# Startet/steuert das Emoji-Panel. Läuft es schon, genügt ein schneller D-Bus-Aufruf.
+#   emoji-panel             Panel ein-/ausblenden
+#   emoji-panel --settings  Einstellungen öffnen
+#   emoji-panel --update    nach Updates suchen
+#   emoji-panel --hidden    im Hintergrund starten (Autostart)
+#   emoji-panel --quit      beenden
+#   emoji-panel --version   Version ausgeben
+DIR="$(dirname "$(readlink -f "$0")")"
+
+action() {
+  gdbus call --session --dest org.emojipanel.App --object-path /org/emojipanel/App \
+    --method org.gtk.Actions.Activate "$1" '[]' '{}' >/dev/null 2>&1
+}
+
+case "$1" in
+  "")         action toggle && exit 0 ;;
+  --settings) action settings && exit 0 ;;
+  --update)   action update && exit 0 ;;
+  --quit)     action quit; exit 0 ;;
+  --hidden)   gdbus introspect --session --dest org.emojipanel.App \
+                --object-path /org/emojipanel/App >/dev/null 2>&1 && exit 0 ;;
+  --version)  sed -n "s/^VERSION = '\(.*\)'/Emoji-Panel \1/p" "$DIR/version.py"; exit 0 ;;
+esac
+exec python3 "$DIR/emojipanel.py" "$@"

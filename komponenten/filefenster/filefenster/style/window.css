@@ -1,0 +1,171 @@
+/* Hauptfenster: Titelleiste mit Tabs, Werkzeugbereich, Befehlsleiste,
+   Statusleiste, Trenner. */
+
+/* ---- Titelleiste / Tabs ------------------------------------------- */
+window.filefenster .titlebar,
+window.filefenster .tabstrip {
+  background-color: @tabs_bg;
+  background-image: none;
+  border: none;
+  box-shadow: none;
+  min-height: 40px;
+  padding: 0;
+  border-radius: 8px 8px 0 0;
+}
+window.filefenster.maximized .tabstrip,
+window.filefenster.tiled .tabstrip { border-radius: 0; }
+
+window.filefenster .tabs { padding-left: 8px; }
+
+window.filefenster .tab { color: @text; }
+window.filefenster .tab .tab-bg {
+  min-height: 32px;
+  margin-top: 8px;
+  border-radius: 8px 8px 0 0;
+  background-color: transparent;
+}
+window.filefenster .tab .tab-inner { padding: 0 4px 0 12px; }
+window.filefenster .tab:hover:not(.active) .tab-bg {
+  background-color: @tab_hover;
+  border-radius: 6px;
+  margin-top: 6px;
+  margin-bottom: 2px;
+}
+window.filefenster .tab.active .tab-bg {
+  background-color: @toolbar_bg;
+}
+window.filefenster .tab separator.tab-sep {
+  min-width: 1px;
+  margin: 16px 0 8px 0;
+  background-color: alpha(@text, 0.16);
+}
+window.filefenster .tab.active separator.tab-sep,
+window.filefenster .tab.before-active separator.tab-sep,
+window.filefenster .tab:hover separator.tab-sep { background-color: transparent; }
+window.filefenster .tab .tab-icon { margin-right: 10px; }
+window.filefenster .tab .tab-label { color: @text; }
+window.filefenster .tab:not(.active) .tab-label { color: alpha(@text, 0.86); }
+window.filefenster .tab button.tab-close {
+  min-width: 24px;
+  min-height: 24px;
+  margin-left: 4px;
+  border-radius: 4px;
+}
+window.filefenster .tab button.tab-close:hover { background-color: @button_hover; }
+
+window.filefenster button.newtab {
+  min-width: 32px;
+  min-height: 32px;
+  margin: 6px 4px 0 4px;
+  border-radius: 6px;
+}
+
+/* Fenster-Knöpfe (Minimieren, Maximieren, Schliessen) */
+window.filefenster button.caption {
+  min-width: 46px;
+  min-height: 40px;
+  border-radius: 0;
+  padding: 0;
+}
+window.filefenster button.caption:hover { background-color: @button_hover; }
+window.filefenster button.caption.close:hover { background-color: @close_hover; }
+window.filefenster button.caption.close:active { background-color: shade(@close_hover, 0.9); }
+window.filefenster:not(.maximized):not(.tiled) button.caption.close { border-top-right-radius: 8px; }
+
+/* ---- Werkzeugbereich (Adresszeile + Befehlsleiste) ---------------- */
+window.filefenster .toolbar-area {
+  background-color: @toolbar_bg;
+}
+window.filefenster separator.toolbar-sep {
+  background-color: @divider;
+  min-height: 1px;
+}
+window.filefenster separator.toolbar-bottom {
+  background-color: @divider;
+  min-height: 1px;
+}
+
+window.filefenster .commandbar {
+  padding: 8px 12px 8px 12px;
+  min-height: 32px;
+}
+window.filefenster .commandbar button.cmd {
+  min-height: 32px;
+  border-radius: 4px;
+  margin-right: 2px;
+}
+window.filefenster .commandbar button.cmd.icon-only { min-width: 40px; }
+window.filefenster .commandbar button.cmd.with-label { padding: 0 10px 0 10px; }
+window.filefenster button.cmd .cmd-icon { margin: 0; }
+window.filefenster button.cmd.with-label .cmd-icon { margin-right: 8px; }
+window.filefenster button.cmd .cmd-arrow { margin-left: 8px; }
+window.filefenster button.cmd .cmd-label { color: @text; }
+window.filefenster button.cmd:disabled .cmd-label { color: @text3; }
+window.filefenster .commandbar separator.cmd-sep {
+  min-width: 1px;
+  margin: 6px 8px;
+  background-color: alpha(@text, 0.14);
+}
+window.filefenster .commandbar button.cmd.details-toggle:checked {
+  background-color: @button_hover;
+}
+
+/* ---- Inhalt / Trenner --------------------------------------------- */
+window.filefenster .content-area,
+window.filefenster .content-stack { background-color: @content_bg; }
+window.filefenster paned > separator {
+  min-width: 1px;
+  background-color: @divider;
+  background-image: none;
+  border: none;
+  margin: 0;
+  padding: 0;
+  -gtk-icon-source: none;
+}
+window.filefenster paned.main-paned > separator {
+  background-color: transparent;
+  border-left: 1px solid transparent;
+}
+window.filefenster .placeholder { color: @text3; }
+
+/* ---- Statusleiste -------------------------------------------------- */
+window.filefenster .statusbar {
+  background-color: @content_bg;
+  padding: 0 8px 0 12px;
+  min-height: 26px;
+  border-radius: 0 0 8px 8px;
+}
+window.filefenster.maximized .statusbar,
+window.filefenster.tiled .statusbar { border-radius: 0; }
+window.filefenster .statusbar label { color: @text; }
+window.filefenster .statusbar label.status-sep { color: alpha(@text, 0.35); margin: 0 10px; }
+window.filefenster .statusbar button.status-toggle {
+  min-width: 26px;
+  min-height: 22px;
+  margin: 2px 0 2px 2px;
+  border-radius: 4px;
+}
+window.filefenster .statusbar button.status-toggle:checked {
+  background-color: @button_hover;
+  box-shadow: inset 0 0 0 1px alpha(@text, 0.10);
+}
+
+/* Tab beim Herausziehen (folgt dem Mauszeiger) */
+window.tab-ghost {
+  background-color: @toolbar_bg;
+  border: 1px solid @border;
+  border-radius: 8px;
+}
+window.tab-ghost label { color: @text; }
+
+/* Rahmen ohne Mindestbreite (Befehlsleiste, Tabs): unsichtbar */
+window.filefenster scrolledwindow.no-min-width,
+window.filefenster scrolledwindow.no-min-width > viewport {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+}
+window.filefenster scrolledwindow.no-min-width undershoot,
+window.filefenster scrolledwindow.no-min-width overshoot { background: none; }

@@ -1,0 +1,142 @@
+/* Dateiliste (folderview.py): Detailansicht (treeview.file-list) und
+   Symbolansichten (iconview.file-icons) im Stil des Windows-11-Explorers.
+   Farben aus der Palette (theme.py). */
+
+window.filefenster .content-area,
+window.filefenster .content-area scrolledwindow,
+window.filefenster .content-area stack {
+  background-color: @content_bg;
+  border: none;
+}
+
+/* ---- Detailansicht ------------------------------------------------- */
+window.filefenster .content-area treeview.view.file-list {
+  background-color: @content_bg;
+  color: @text;
+  border: none;
+  outline: none;
+  -GtkTreeView-horizontal-separator: 0;
+  -GtkTreeView-vertical-separator: 0;
+  -GtkTreeView-grid-line-width: 0;
+  -GtkTreeView-tree-line-width: 0;
+}
+window.filefenster .content-area treeview.view.file-list:hover {
+  background-color: @hover;
+}
+window.filefenster .content-area treeview.view.file-list:selected,
+window.filefenster .content-area treeview.view.file-list:selected:focus,
+window.filefenster .content-area treeview.view.file-list:selected:backdrop {
+  background-color: @selected;
+  color: @text;
+}
+window.filefenster .content-area treeview.view.file-list:selected:hover {
+  background-color: @selected_hover;
+}
+/* Tastaturfokus (nur bei Tastaturbedienung sichtbar) */
+window.filefenster .content-area treeview.view.file-list {
+  outline-color: @selected_border;
+  outline-style: solid;
+  outline-width: 1px;
+  outline-offset: -1px;
+  -gtk-outline-radius: 0;
+}
+
+/* Spaltenköpfe: ohne Hintergrund, dünne Trenner, Text grau */
+window.filefenster .content-area treeview.view.file-list header button {
+  background-image: none;
+  background-color: transparent;
+  color: @text2;
+  border-style: none solid none none;
+  border-width: 0 1px 0 0;
+  border-color: @divider;
+  border-radius: 0;
+  box-shadow: none;
+  text-shadow: none;
+  min-height: 31px;
+  padding: 0 6px 0 8px;
+  margin: 0;
+}
+window.filefenster .content-area treeview.view.file-list header button:hover {
+  background-color: @button_hover;
+  color: @text;
+}
+window.filefenster .content-area treeview.view.file-list header button:active {
+  background-color: @button_active;
+}
+window.filefenster .content-area treeview.view.file-list header button:last-child {
+  border-right-style: none;
+}
+window.filefenster .content-area treeview.view.file-list header button,
+window.filefenster .content-area treeview.view.file-list header button label {
+  color: inherit;
+  font-weight: normal;
+}
+window.filefenster .content-area treeview.view.file-list header button {
+  color: @text2;
+}
+window.filefenster .content-area treeview.view.file-list header button .sort-arrow {
+  margin-top: 1px;
+}
+
+/* Gummiband-Auswahl */
+window.filefenster .content-area treeview.view.file-list rubberband,
+window.filefenster .content-area iconview.file-icons rubberband,
+window.filefenster .content-area .rubberband {
+  background-color: alpha(@accent, 0.22);
+  border: 1px solid @accent;
+  border-radius: 0;
+}
+
+/* ---- Symbolansichten ---------------------------------------------- */
+window.filefenster .content-area iconview.file-icons {
+  background-color: @content_bg;
+  color: @text;
+  border: none;
+  border-radius: 0;
+  outline-color: @selected_border;
+  outline-style: solid;
+  outline-width: 1px;
+  outline-offset: -1px;
+  -gtk-outline-radius: 0;
+}
+window.filefenster .content-area iconview.file-icons:hover {
+  background-color: @hover;
+  border-radius: 0;
+}
+window.filefenster .content-area iconview.file-icons:selected,
+window.filefenster .content-area iconview.file-icons:selected:focus,
+window.filefenster .content-area iconview.file-icons:selected:backdrop {
+  background-color: @selected;
+  color: @text;
+  border-radius: 0;
+  border: 1px solid @selected_border;
+}
+window.filefenster .content-area iconview.file-icons:selected:hover {
+  background-color: @selected_hover;
+}
+
+/* Umbenennen-Feld (beide Ansichten) */
+window.filefenster .content-area entry.rename-entry,
+window.filefenster .content-area treeview entry,
+window.filefenster .content-area iconview entry {
+  min-height: 0;
+  padding: 0 3px;
+  margin: 0;
+  border: 1px solid @text2;
+  border-radius: 0;
+  background-color: @content_bg;
+  color: @text;
+  box-shadow: none;
+}
+window.filefenster .content-area entry.rename-entry:focus,
+window.filefenster .content-area treeview entry:focus,
+window.filefenster .content-area iconview entry:focus {
+  border: 1px solid @accent;
+  padding: 0 3px;
+}
+
+/* "Dieser Ordner ist leer." */
+window.filefenster .content-area .empty-label {
+  color: @text3;
+  background: none;
+}

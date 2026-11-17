@@ -1,0 +1,77 @@
+{
+    "head": {
+        "type": "header",
+        "description": "Tray einklappen"
+    },
+    "mode": {
+        "type": "combobox",
+        "default": "popup",
+        "options": {
+            "Fenster über dem Panel (wie Windows)": "popup",
+            "Im Panel aus- und einklappen": "inline"
+        },
+        "description": "Ausgeblendete Symbole zeigen als"
+    },
+    "columns": {
+        "type": "spinbutton",
+        "default": 4,
+        "min": 1,
+        "max": 12,
+        "step": 1,
+        "units": "Spalten",
+        "description": "Symbole pro Zeile im Fenster",
+        "dependency": "mode=popup"
+    },
+    "popup-icon-size": {
+        "type": "combobox",
+        "default": "small",
+        "options": {
+            "Klein (16 px, wie einfarbige Symbole)": "small",
+            "Mittel (20 px)": "medium",
+            "Groß (24 px, wie farbige Symbole)": "large"
+        },
+        "description": "Symbolgröße im Fenster",
+        "dependency": "mode=popup"
+    },
+    "applets": {
+        "type": "list",
+        "description": "Diese Cinnamon-Applets ebenfalls ausblenden (UUID, siehe Systemeinstellungen → Applets)",
+        "columns": [
+            {
+                "id": "uuid",
+                "title": "Applet-UUID",
+                "type": "string"
+            }
+        ],
+        "default": [
+            {
+                "uuid": "removable-drives@cinnamon.org"
+            },
+            {
+                "uuid": "printers@cinnamon.org"
+            }
+        ]
+    },
+    "auto-collapse": {
+        "type": "spinbutton",
+        "default": 0,
+        "min": 0,
+        "max": 300,
+        "step": 1,
+        "units": "Sekunden",
+        "description": "Automatisch wieder schließen bzw. einklappen nach (0 = nie)"
+    },
+    "expand-on-hover": {
+        "type": "switch",
+        "default": false,
+        "description": "Öffnen, sobald die Maus über dem Pfeil ist"
+    },
+    "collapsed": {
+        "type": "generic",
+        "default": true
+    },
+    "pinned": {
+        "type": "generic",
+        "default": []
+    }
+}

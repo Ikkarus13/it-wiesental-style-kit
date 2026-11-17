@@ -1,0 +1,10 @@
+{
+    "uuid": "pwa-notifications@sascha",
+    "name": "PWA-Benachrichtigungen",
+    "description": "Zeigt Benachrichtigungen von Web-Apps (Teams, Outlook, 3CX …) mit richtigem App-Namen, App-Icon und Absenderbild statt als «Microsoft Edge» – im Stil von Windows 11, einstellbar.",
+    "version": "1.5.0",
+    "cinnamon-version": ["6.0", "6.2", "6.4", "6.6"],
+    "url": "https://github.com/Ikkarus13/pwa-notifications",
+    "update-repo": "Ikkarus13/pwa-notifications",
+    "author": "sascha"
+}

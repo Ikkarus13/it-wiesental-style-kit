@@ -1,0 +1,162 @@
+/* Grundstil: Schrift, Fenster, Knöpfe, Bildlaufleisten, Menüs, Tooltips.
+   Farben kommen als @define-color aus theme.py (z. B. @text, @accent). */
+
+* {
+  font-family: "Selawik", "Segoe UI", "Noto Sans", sans-serif;
+  font-size: 9pt;
+  -gtk-outline-radius: 4px;
+  outline-color: alpha(@text, 0.6);
+}
+
+window.filefenster, window.filefenster.background {
+  background-color: @content_bg;
+  color: @text;
+}
+
+/* Fensterrahmen wie Windows 11: runde Ecken, weicher Schatten */
+window.filefenster.csd decoration {
+  border-radius: 8px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.30), 0 0 0 1px rgba(0, 0, 0, 0.22);
+  margin: 10px;
+}
+/* Inaktiv: schwächerer Schatten – aber mit einem unsichtbaren Schatten in voller
+   Grösse. GTK berechnet aus dem Schatten den Fensterrand; wäre er kleiner, rückte
+   beim Aktivieren der ganze Inhalt (✕ um ~70 px) – der erste Klick ginge ins Leere. */
+window.filefenster.csd:backdrop decoration {
+  box-shadow: 0 8px 28px transparent, 0 4px 16px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.18);
+}
+window.filefenster.maximized decoration,
+window.filefenster.tiled decoration { border-radius: 0; margin: 0; }
+window.filefenster.csd { border-radius: 8px; }
+window.filefenster.maximized, window.filefenster.tiled { border-radius: 0; }
+
+/* Neutrale Knöpfe ohne Theme-Verläufe */
+window.filefenster button {
+  background-image: none;
+  background-color: transparent;
+  border: none;
+  box-shadow: none;
+  text-shadow: none;
+  -gtk-icon-shadow: none;
+  color: @text;
+  min-height: 0;
+  min-width: 0;
+  padding: 0;
+  border-radius: 4px;
+}
+window.filefenster button:hover { background-color: @button_hover; }
+window.filefenster button:active,
+window.filefenster button:checked { background-color: @button_active; }
+window.filefenster button:disabled { color: @text3; background-color: transparent; }
+window.filefenster button:disabled image { opacity: 0.38; }
+window.filefenster label:disabled { color: @text3; }
+
+window.filefenster separator { background-color: @divider; min-width: 1px; min-height: 1px; }
+
+/* Bildlaufleisten: schmal, nur Daumen */
+window.filefenster scrollbar {
+  background-color: transparent;
+  border: none;
+}
+window.filefenster scrollbar slider {
+  background-color: @scroll_thumb;
+  border: none;
+  border-radius: 3px;
+  min-width: 3px;
+  min-height: 3px;
+  margin: 2px;
+}
+window.filefenster scrollbar.overlay-indicator:not(.dragging):not(.hovering) slider {
+  min-width: 2px; min-height: 2px; margin: 3px;
+}
+window.filefenster scrollbar.hovering slider,
+window.filefenster scrollbar.dragging slider {
+  min-width: 6px; min-height: 6px;
+}
+window.filefenster undershoot, window.filefenster overshoot { background: none; box-shadow: none; }
+
+/* Textfelder allgemein (Fluent-Textbox) */
+window.filefenster entry {
+  background-image: none;
+  background-color: @control_bg;
+  color: @text;
+  border: 1px solid @control_border;
+  border-bottom-color: @control_border_bottom;
+  border-radius: 4px;
+  box-shadow: none;
+  min-height: 28px;
+  padding: 0 8px;
+  caret-color: @text;
+}
+window.filefenster entry:hover { background-color: @control_hover; }
+window.filefenster entry:focus {
+  background-color: @content_bg;
+  border-bottom: 2px solid @accent;
+  padding-bottom: 0;
+}
+window.filefenster entry selection { background-color: @accent; color: @accent_text; }
+window.filefenster entry placeholder { color: @text3; }
+
+/* Tooltips */
+tooltip, tooltip.background {
+  background-color: @menu_bg;
+  background-clip: border-box;   /* Adwaita: padding-box → Rand sonst durchsichtig/schwarz */
+  color: @text;
+  border: 1px solid @menu_border;
+  border-radius: 4px;
+  box-shadow: none;
+  padding: 0;
+}
+tooltip label { padding: 3px 4px; color: @text; }
+tooltip * { background: none; }
+
+/* ---- Menüs (menu.py) ---------------------------------------------- */
+.csd.popup decoration {
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.18), 0 0 0 1px @menu_border;
+}
+menu.win-menu, .win-menu {
+  background-color: @menu_bg;
+  color: @text;
+  border: none;
+  border-radius: 8px;
+  padding: 4px 0;
+  margin: 0;
+}
+menu.win-menu menuitem {
+  min-height: 30px;
+  padding: 0 12px 0 10px;
+  margin: 1px 4px;
+  border-radius: 4px;
+  color: @text;
+  background-image: none;
+  box-shadow: none;
+  text-shadow: none;
+}
+menu.win-menu menuitem:hover {
+  background-color: @menu_hover;
+  color: @text;
+}
+menu.win-menu menuitem:disabled label,
+menu.win-menu menuitem:disabled { color: @text3; }
+menu.win-menu menuitem:disabled image { opacity: 0.38; }
+menu.win-menu menuitem label { color: inherit; }
+menu.win-menu menuitem arrow { min-width: 0; min-height: 0; -gtk-icon-source: none; }
+menu.win-menu .menu-icon { margin-right: 12px; min-width: 16px; }
+menu.win-menu .menu-accel { color: @text2; margin-left: 32px; }
+menu.win-menu .menu-arrow { margin-left: 16px; }
+menu.win-menu .bold { font-weight: bold; }
+menu.win-menu .mark { min-width: 20px; }
+menu.win-menu separator {
+  margin: 4px 0;
+  min-height: 1px;
+  background-color: alpha(@text, 0.09);
+}
+menu.win-menu menuitem.icon-row-item {
+  min-height: 32px;
+  min-width: 32px;
+  padding: 0;
+  margin: 2px 2px;
+}
+menu.win-menu menuitem.icon-row-item image { margin: 0 8px; }
+menu.win-menu > arrow { background: none; border: none; min-height: 0; }

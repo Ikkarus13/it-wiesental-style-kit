@@ -1,0 +1,16 @@
+{
+    "head": {
+        "type": "header",
+        "description": "Tastenkürzel"
+    },
+    "overlay-key": {
+        "type": "keybinding",
+        "default": "Super_L::Super_R",
+        "description": "Startmenü öffnen/schliessen"
+    },
+    "winx-key": {
+        "type": "keybinding",
+        "default": "<Super>x",
+        "description": "Schnellzugriffsmenü (wie Win+X)"
+    }
+}

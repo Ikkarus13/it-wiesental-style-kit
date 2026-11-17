@@ -1,0 +1,124 @@
+/* Eigenschaften-Dialog und Meldungen (propsdialog.py) – Fluent-artig */
+
+window.filefenster.props-dialog { background-color: @dialog_bg; color: @text; }
+
+/* Registerkarten: flach, aktive mit Akzentlinie unter dem Text */
+window.filefenster.props-dialog notebook,
+window.filefenster.props-dialog notebook.frame {
+  background: none;
+  border: none;
+  box-shadow: none;
+}
+window.filefenster.props-dialog notebook > header,
+window.filefenster.props-dialog notebook > header.top {
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  margin: 0 0 8px 0;
+}
+window.filefenster.props-dialog notebook > header > tabs { margin: 0; }
+window.filefenster.props-dialog notebook > header > tabs > tab,
+window.filefenster.props-dialog notebook > header.top > tabs > tab {
+  background: none;
+  border: none;
+  box-shadow: none;
+  outline-width: 0;
+  min-height: 0;
+  min-width: 0;
+  padding: 6px 10px 6px 10px;
+  margin: 0 4px 0 0;
+  border-radius: 4px;
+  color: @text2;
+}
+window.filefenster.props-dialog notebook > header > tabs > tab label {
+  padding-bottom: 5px;
+  border-bottom: 2px solid transparent;
+  color: inherit;
+}
+window.filefenster.props-dialog notebook > header > tabs > tab:hover {
+  background-color: @button_hover;
+  color: @text;
+}
+window.filefenster.props-dialog notebook > header > tabs > tab:checked { color: @text; }
+window.filefenster.props-dialog notebook > header > tabs > tab:checked label {
+  border-bottom-color: @accent;
+}
+window.filefenster.props-dialog notebook > stack,
+window.filefenster.props-dialog notebook > stack:not(:only-child) {
+  background-color: @toolbar_bg;
+  border: 1px solid @border;
+  border-radius: 6px;
+}
+
+window.filefenster.props-dialog .props-key { color: @text; }
+window.filefenster.props-dialog .props-value { color: @text; }
+window.filefenster.props-dialog .props-colhead { color: @text2; }
+window.filefenster.props-dialog .props-note { color: @text2; }
+window.filefenster.props-dialog separator.props-sep { background-color: @border; min-height: 1px; }
+window.filefenster.props-dialog label selection { background-color: @accent; color: @accent_text; }
+window.filefenster.props-dialog entry.props-name { min-height: 28px; }
+
+/* Kontrollkästchen im Fluent-Stil */
+window.filefenster.props-dialog checkbutton { padding: 0; }
+window.filefenster.props-dialog checkbutton label { margin-left: 6px; color: @text; }
+window.filefenster.props-dialog check {
+  min-width: 16px;
+  min-height: 16px;
+  margin: 0;
+  border: 1px solid @text2;
+  border-radius: 4px;
+  background-image: none;
+  background-color: alpha(@control_bg, 0.6);
+  box-shadow: none;
+  -gtk-icon-source: none;
+  -gtk-icon-shadow: none;
+  color: @accent_text;
+}
+window.filefenster.props-dialog checkbutton:hover check { background-color: @control_hover; }
+window.filefenster.props-dialog check:checked {
+  background-color: @accent;
+  border-color: @accent;
+  -gtk-icon-source: -gtk-icontheme("object-select-symbolic");
+}
+window.filefenster.props-dialog check:indeterminate {
+  background-color: @accent;
+  border-color: @accent;
+  -gtk-icon-source: -gtk-icontheme("list-remove-symbolic");
+}
+window.filefenster.props-dialog check:disabled { opacity: 0.45; }
+
+/* Knöpfe (Dialoge): Fluent-Standardknopf und Akzentknopf */
+window.filefenster button.win-btn {
+  min-height: 30px;
+  min-width: 80px;
+  padding: 0 12px;
+  background-color: @control_bg;
+  border: 1px solid @control_border;
+  border-radius: 4px;
+  color: @text;
+}
+window.filefenster button.win-btn.small { min-width: 0; min-height: 26px; padding: 0 10px; }
+window.filefenster button.win-btn label { color: inherit; }
+window.filefenster button.win-btn:hover { background-color: @control_hover; }
+window.filefenster button.win-btn:active { background-color: @control_bg; color: @text2; }
+window.filefenster button.win-btn:disabled {
+  background-color: alpha(@control_bg, 0.5);
+  border-color: alpha(@control_border, 0.6);
+  color: @text3;
+}
+window.filefenster button.win-btn.accent {
+  background-color: @accent;
+  border-color: @accent;
+  color: @accent_text;
+}
+window.filefenster button.win-btn.accent:hover { background-color: alpha(@accent, 0.90); }
+window.filefenster button.win-btn.accent:active { background-color: alpha(@accent, 0.80); }
+
+/* Meldungsdialog (message()): Inhalt hell, Fussleiste mit Knöpfen dunkler */
+window.filefenster.win-dialog { background-color: @toolbar_bg; color: @text; }
+window.filefenster.win-dialog .win-footer {
+  background-color: @dialog_bg;
+  border-top: 1px solid @border;
+}
+window.filefenster.win-dialog .dialog-action-box { margin: 0; padding: 0; }

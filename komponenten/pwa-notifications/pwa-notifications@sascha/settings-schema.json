@@ -1,0 +1,356 @@
+{
+    "layout": {
+        "type": "layout",
+        "pages": ["page-look", "page-content", "page-behaviour", "page-updates"],
+
+        "page-look": {
+            "type": "page",
+            "title": "Aussehen",
+            "sections": ["sec-style", "sec-colors", "sec-shape", "sec-try"]
+        },
+        "sec-style": {
+            "type": "section",
+            "title": "Stil",
+            "keys": ["style-preset", "style-scope"]
+        },
+        "sec-colors": {
+            "type": "section",
+            "title": "Eigene Farben",
+            "dependency": "style-preset=custom",
+            "keys": ["custom-background", "custom-text"]
+        },
+        "sec-shape": {
+            "type": "section",
+            "title": "Form",
+            "dependency": "style-preset!=theme",
+            "keys": ["opacity", "width", "corner-radius", "border", "shadow"]
+        },
+        "sec-try": {
+            "type": "section",
+            "title": "Ausprobieren",
+            "keys": ["btn-preview", "btn-notification-settings"]
+        },
+
+        "page-content": {
+            "type": "page",
+            "title": "Inhalt",
+            "sections": ["sec-header", "sec-image", "sec-text"]
+        },
+        "sec-header": {
+            "type": "section",
+            "title": "Kopfzeile",
+            "keys": ["header-mode"]
+        },
+        "sec-image": {
+            "type": "section",
+            "title": "Bild",
+            "keys": ["use-sender-image", "image-size"]
+        },
+        "sec-text": {
+            "type": "section",
+            "title": "Text und Knöpfe",
+            "keys": ["max-lines", "hide-edge-settings", "call-buttons"]
+        },
+
+        "page-behaviour": {
+            "type": "page",
+            "title": "Verhalten",
+            "sections": ["sec-list", "sec-programs", "sec-dismiss", "sec-apps", "sec-rules"]
+        },
+        "sec-list": {
+            "type": "section",
+            "title": "Benachrichtigungsliste",
+            "keys": ["list-newest-first", "list-group-by-app", "btn-list-settings"]
+        },
+        "sec-dismiss": {
+            "type": "section",
+            "title": "Anzeigedauer",
+            "keys": ["auto-dismiss-chats", "dismiss-info"]
+        },
+        "sec-apps": {
+            "type": "section",
+            "title": "Erkannte Web-Apps",
+            "keys": ["detected-apps", "btn-reload-apps"]
+        },
+        "sec-programs": {
+            "type": "section",
+            "title": "Programme",
+            "keys": ["programs-info", "program-rules"]
+        },
+        "sec-rules": {
+            "type": "section",
+            "title": "Regeln für Web-Apps",
+            "keys": ["rules-info", "app-rules"]
+        },
+
+        "page-updates": {
+            "type": "page",
+            "title": "Updates",
+            "sections": ["sec-update-status", "sec-update-auto", "sec-update-source"]
+        },
+        "sec-update-status": {
+            "type": "section",
+            "title": "Version",
+            "keys": ["update-status", "btn-check-updates", "btn-install-update", "btn-open-release"]
+        },
+        "sec-update-auto": {
+            "type": "section",
+            "title": "Automatisch",
+            "keys": ["update-auto-check", "update-auto-install"]
+        },
+        "sec-update-source": {
+            "type": "section",
+            "title": "Quelle",
+            "keys": ["update-repo", "update-token", "token-info"]
+        }
+    },
+
+    "style-preset": {
+        "type": "combobox",
+        "default": "auto",
+        "description": "Farbschema",
+        "options": {
+            "Windows 11 – hell/dunkel wie das System": "auto",
+            "Windows 11 dunkel": "dark",
+            "Windows 11 hell": "light",
+            "Eigene Farben": "custom",
+            "Wie das Desktop-Theme (nur Inhalt verbessern)": "theme"
+        }
+    },
+    "style-scope": {
+        "type": "combobox",
+        "default": "all",
+        "description": "Gilt für",
+        "options": {
+            "Alle Benachrichtigungen": "all",
+            "Nur Web-Apps": "pwa"
+        },
+        "tooltip": "«Nur Web-Apps» lässt Meldungen anderer Programme so, wie das Desktop-Theme sie zeigt."
+    },
+    "custom-background": {
+        "type": "colorchooser",
+        "default": "rgb(43,43,43)",
+        "description": "Hintergrund"
+    },
+    "custom-text": {
+        "type": "colorchooser",
+        "default": "rgb(255,255,255)",
+        "description": "Schrift"
+    },
+    "opacity": {
+        "type": "scale",
+        "default": 98,
+        "min": 70,
+        "max": 100,
+        "step": 1,
+        "show-value": true,
+        "description": "Deckkraft (%)"
+    },
+    "width": {
+        "type": "spinbutton",
+        "default": 368,
+        "min": 280,
+        "max": 640,
+        "step": 8,
+        "units": "Pixel",
+        "description": "Breite"
+    },
+    "corner-radius": {
+        "type": "spinbutton",
+        "default": 8,
+        "min": 0,
+        "max": 24,
+        "step": 1,
+        "units": "Pixel",
+        "description": "Eckenrundung"
+    },
+    "border": {
+        "type": "switch",
+        "default": true,
+        "description": "Feiner Rahmen"
+    },
+    "shadow": {
+        "type": "switch",
+        "default": true,
+        "description": "Schatten"
+    },
+    "btn-preview": {
+        "type": "button",
+        "description": "Vorschau anzeigen",
+        "callback": "showPreview"
+    },
+    "btn-notification-settings": {
+        "type": "button",
+        "description": "Position, Dauer und «Nicht stören» (Cinnamon) …",
+        "callback": "openNotificationSettings"
+    },
+
+    "header-mode": {
+        "type": "combobox",
+        "default": "pwa",
+        "description": "App-Name und Icon oben anzeigen",
+        "options": {
+            "Bei Web-Apps": "pwa",
+            "Bei allen Apps": "all",
+            "Nie": "none"
+        }
+    },
+    "use-sender-image": {
+        "type": "switch",
+        "default": true,
+        "description": "Absenderbild statt App-Icon",
+        "tooltip": "Zum Beispiel das Profilbild der Person, die in Teams schreibt. Ohne Absenderbild wird das App-Icon gezeigt."
+    },
+    "image-size": {
+        "type": "spinbutton",
+        "default": 40,
+        "min": 24,
+        "max": 64,
+        "step": 4,
+        "units": "Pixel",
+        "description": "Bildgrösse"
+    },
+    "max-lines": {
+        "type": "spinbutton",
+        "default": 5,
+        "min": 1,
+        "max": 12,
+        "step": 1,
+        "units": "Zeilen",
+        "description": "Text höchstens"
+    },
+    "call-buttons": {
+        "type": "switch",
+        "default": true,
+        "description": "Knöpfe «Annehmen», «Mit Video» und «Ablehnen» bei Teams-Anrufen",
+        "tooltip": "Teams schickt bei Anrufen keine Knöpfe mit. Diese Knöpfe holen das Teams-Fenster nach vorne und drücken das passende Teams-Tastenkürzel (Strg+Umschalt+S, A oder D)."
+    },
+    "hide-edge-settings": {
+        "type": "switch",
+        "default": true,
+        "description": "Knopf «Einstellungen» von Edge ausblenden"
+    },
+
+    "list-newest-first": {
+        "type": "switch",
+        "default": false,
+        "description": "Neueste Meldungen oben",
+        "tooltip": "Reihenfolge in der Liste hinter der Glocke im Panel. Entspricht der Einstellung des Cinnamon-Applets «Benachrichtigungen»."
+    },
+    "list-group-by-app": {
+        "type": "switch",
+        "default": false,
+        "description": "Nach App gruppieren (wie unter Windows)",
+        "tooltip": "Pro App eine Kopfzeile mit Anzahl. Der Pfeil klappt eine Gruppe ein, das Kreuz löscht alle Meldungen der App."
+    },
+    "btn-list-settings": {
+        "type": "button",
+        "description": "Weitere Einstellungen der Liste (Cinnamon) …",
+        "callback": "openListSettings"
+    },
+    "auto-dismiss-chats": {
+        "type": "switch",
+        "default": false,
+        "description": "Dringende Meldungen ohne Knöpfe automatisch ausblenden"
+    },
+    "dismiss-info": {
+        "type": "label",
+        "description": "Teams schickt Chat-Nachrichten als «dringend», deshalb bleiben sie stehen, bis man sie wegklickt. Eingeschaltet verschwinden sie wie andere Meldungen. Anrufe (mit Annehmen/Ablehnen) bleiben weiterhin stehen."
+    },
+    "detected-apps": {
+        "type": "custom",
+        "file": "widgets.py",
+        "widget": "DetectedApps",
+        "default": ""
+    },
+    "btn-reload-apps": {
+        "type": "button",
+        "description": "Neu einlesen",
+        "callback": "reloadApps"
+    },
+    "programs-info": {
+        "type": "label",
+        "description": "Meldungen einzelner Programme ausblenden, nur in der Liste (ohne Pop-up) oder nur als Pop-up (nicht in der Liste) zeigen. Als Programm den Namen eintragen, der in der gruppierten Liste über den Meldungen steht, z. B. blueman. Schneller geht es dort mit dem Glocken-Symbol neben dem Pfeil."
+    },
+    "program-rules": {
+        "type": "list",
+        "description": "Programme",
+        "columns": [
+            {"id": "program", "title": "Programm", "type": "string"},
+            {"id": "mode", "title": "Anzeige", "type": "string", "default": "hide",
+             "options": {"Ausblenden": "hide", "Nur in der Liste": "list", "Nur Pop-up": "popup"}}
+        ],
+        "default": []
+    },
+    "rules-info": {
+        "type": "label",
+        "description": "Für Web-Apps, die nicht erkannt werden (z. B. aus Chrome), oder um eine App umzubenennen oder stummzuschalten. Die Domain ist die erste Zeile, die ohne diese Erweiterung in der Meldung steht, z. B. teams.cloud.microsoft – sie gilt auch für Unterdomains."
+    },
+    "app-rules": {
+        "type": "list",
+        "description": "Regeln",
+        "columns": [
+            {"id": "domain", "title": "Domain", "type": "string"},
+            {"id": "name", "title": "Anzeigename", "type": "string"},
+            {"id": "icon", "title": "Icon", "type": "icon"},
+            {"id": "mute", "title": "Stumm", "type": "boolean"}
+        ],
+        "default": []
+    },
+
+    "update-status": {
+        "type": "custom",
+        "file": "widgets.py",
+        "widget": "UpdateStatus",
+        "default": ""
+    },
+    "btn-check-updates": {
+        "type": "button",
+        "description": "Jetzt nach Updates suchen",
+        "callback": "checkUpdatesNow"
+    },
+    "btn-install-update": {
+        "type": "button",
+        "description": "Update installieren",
+        "callback": "installUpdate",
+        "dependency": "update-available"
+    },
+    "btn-open-release": {
+        "type": "button",
+        "description": "Release-Seite öffnen (zum manuellen Herunterladen)",
+        "callback": "openReleasePage"
+    },
+    "update-auto-check": {
+        "type": "switch",
+        "default": true,
+        "description": "Täglich nach Updates suchen"
+    },
+    "update-auto-install": {
+        "type": "switch",
+        "default": false,
+        "description": "Updates ohne Nachfrage installieren",
+        "dependency": "update-auto-check"
+    },
+    "update-repo": {
+        "type": "entry",
+        "default": "",
+        "description": "GitHub-Repository (leer = Standard)",
+        "tooltip": "Format besitzer/repository. Leer lassen für die Quelle, aus der die Erweiterung stammt."
+    },
+    "update-token": {
+        "type": "entry",
+        "default": "",
+        "description": "Zugangstoken (nur bei privatem Repository)"
+    },
+    "token-info": {
+        "type": "label",
+        "description": "Ein «Fine-grained token» von GitHub mit nur Lesezugriff auf «Contents» dieses einen Repositorys genügt. Es wird unverschlüsselt in den Einstellungen gespeichert."
+    },
+
+    "installed-version": {"type": "generic", "default": ""},
+    "update-last-check": {"type": "generic", "default": ""},
+    "update-latest-version": {"type": "generic", "default": ""},
+    "update-page-url": {"type": "generic", "default": ""},
+    "update-message": {"type": "generic", "default": ""},
+    "update-available": {"type": "generic", "default": false}
+}

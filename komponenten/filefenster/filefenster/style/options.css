@@ -1,0 +1,57 @@
+/* Ordneroptionen (folderoptions.py). Registerkarten, Kontrollkästchen und
+   Knöpfe kommen aus props.css (Klasse props-dialog); hier nur, was fehlt. */
+
+window.filefenster.win-dialog.options-dialog { background-color: @dialog_bg; color: @text; }
+
+/* Gruppenfelder („Ordner durchsuchen“, „Klickoptionen“ …) */
+window.filefenster.options-dialog frame.opt-group > border {
+  border: 1px solid @border;
+  border-radius: 6px;
+}
+window.filefenster.options-dialog frame.opt-group > label.opt-group-title {
+  color: @text;
+  padding: 0 4px;
+}
+
+/* Liste „Erweiterte Einstellungen“ */
+window.filefenster.options-dialog scrolledwindow.opt-list {
+  background-color: @control_bg;
+  border: 1px solid @border;
+  border-radius: 4px;
+}
+window.filefenster.options-dialog scrolledwindow.opt-list viewport { background: none; }
+
+/* Optionsfelder im Fluent-Stil */
+window.filefenster.options-dialog radiobutton { padding: 0; }
+window.filefenster.options-dialog radiobutton label { margin-left: 6px; color: @text; }
+window.filefenster.options-dialog radio {
+  min-width: 16px;
+  min-height: 16px;
+  margin: 0;
+  border: 1px solid @text2;
+  border-radius: 9px;
+  background-image: none;
+  background-color: alpha(@control_bg, 0.6);
+  box-shadow: none;
+  -gtk-icon-source: none;
+  -gtk-icon-shadow: none;
+}
+window.filefenster.options-dialog radiobutton:hover radio { background-color: @control_hover; }
+window.filefenster.options-dialog radio:checked {
+  border-color: @accent;
+  background-color: @accent_text;
+  box-shadow: inset 0 0 0 4px @accent;
+}
+
+/* Auswahlfeld „Datei-Explorer öffnen für“ */
+window.filefenster.options-dialog combobox button.combo {
+  min-height: 28px;
+  padding: 0 8px;
+  background-image: none;
+  background-color: @control_bg;
+  border: 1px solid @control_border;
+  border-radius: 4px;
+  color: @text;
+}
+window.filefenster.options-dialog combobox button.combo:hover { background-color: @control_hover; }
+window.filefenster.options-dialog combobox button.combo arrow { color: @text2; }

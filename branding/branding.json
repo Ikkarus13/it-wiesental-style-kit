@@ -1,0 +1,24 @@
+{
+  "firma": "IT-Wiesental",
+  "produkt": "IT-Wiesental Style Kit",
+  "untertitel": "Linux Mint im Stil von Windows 11",
+  "farbe": "#F0B429",
+  "kontakt": "",
+  "web": "https://it-wiesental.de",
+  "logo_text": "IT-Wiesental",
+  "update_repo": "Ikkarus13/it-wiesental-style-kit",
+  "logo_punkt": "#F0B429",
+  "leiste_titel": "Style Kit",
+  "stil": {
+    "leiste_bg": "#0F2027",
+    "leiste_text": "#D3DBC9",
+    "fuss_bg": "#16303A",
+    "fuss_text": "#D3DBC9",
+    "akzent_text": "#0F2027",
+    "radius": "2px",
+    "schrift_text": "Instrument Sans",
+    "schrift_groesse": 10,
+    "schrift_titel": "Bricolage Grotesque",
+    "schrift_mono": "IBM Plex Mono"
+  }
+}

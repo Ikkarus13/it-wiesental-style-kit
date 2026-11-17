@@ -1,0 +1,30 @@
+/* Vorschaufenster rechts (previewpane.py) – gleicher Stil wie der Detailbereich.
+   Den 1px-Trenner links setzt das Fenster. */
+
+window.filefenster .preview-pane,
+window.filefenster .preview-pane stack,
+window.filefenster .preview-pane scrolledwindow,
+window.filefenster .preview-pane viewport {
+  background-color: @content_bg;
+  border: none;
+  box-shadow: none;
+}
+window.filefenster .preview-pane .pv-message { color: @text2; }
+window.filefenster .preview-pane textview.pv-text,
+window.filefenster .preview-pane textview.pv-text text {
+  background-color: @content_bg;
+  color: @text;
+  font-family: "Cascadia Mono", "Consolas", "DejaVu Sans Mono", "Noto Sans Mono", monospace;
+  font-size: 9pt;
+}
+window.filefenster .preview-pane textview.pv-text text selection {
+  background-color: @selected;
+  color: @text;
+}
+window.filefenster .preview-pane .pv-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: @text;
+}
+window.filefenster .preview-pane .pv-key { color: @text2; }
+window.filefenster .preview-pane .pv-value { color: @text; }

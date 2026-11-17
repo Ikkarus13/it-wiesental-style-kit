@@ -1,0 +1,33 @@
+/* Updates (update_ui.py): Hinweispunkt am „···“-Knopf und Update-Dialog */
+
+window.filefenster .commandbar .update-badge {
+  min-width: 7px;
+  min-height: 7px;
+  margin: 0 -3px 0 0;
+  border-radius: 50%;
+  background-color: @accent;
+}
+
+window.filefenster.update-dialog .update-title { font-size: 13pt; font-weight: 600; }
+window.filefenster.update-dialog .update-sub { color: @text2; }
+window.filefenster.update-dialog .update-notes-title { font-weight: 600; }
+window.filefenster.update-dialog scrolledwindow.update-notes {
+  background-color: @control_bg;
+  border: 1px solid @border;
+  border-radius: 4px;
+}
+window.filefenster.update-dialog scrolledwindow.update-notes textview,
+window.filefenster.update-dialog scrolledwindow.update-notes textview text {
+  background-color: @control_bg;
+  color: @text;
+}
+window.filefenster.update-dialog .update-error { color: #c42b1c; }
+
+window.filefenster.update-dialog progressbar trough {
+  min-height: 6px; padding: 0;
+  background-color: @control_bg; border: 1px solid @control_border; border-radius: 3px;
+}
+window.filefenster.update-dialog progressbar progress {
+  min-height: 6px; border: none; border-radius: 3px; background-color: @accent;
+}
+window.filefenster.update-dialog progressbar text { color: @text2; }

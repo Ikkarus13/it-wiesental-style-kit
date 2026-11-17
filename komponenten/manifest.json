@@ -1,0 +1,47 @@
+{
+  "design": {
+    "version": "2026.10.09",
+    "quelle": "yeyushengfan258/Win11-gtk-theme (aus ~/.themes)",
+    "ref": "49e30de"
+  },
+  "emoji-panel": {
+    "version": "1.1.0",
+    "quelle": "Ikkarus13/emoji-panel",
+    "ref": "14f803945bd5"
+  },
+  "filefenster": {
+    "version": "0.16.0",
+    "quelle": "Ikkarus13/filefenster",
+    "ref": "4afc78a30a4b"
+  },
+  "onedrive": {
+    "version": "2.4.1",
+    "quelle": "Ikkarus13/cloud-sync",
+    "ref": "1660f0af1e68"
+  },
+  "pwa-link-organizer": {
+    "version": "1.2.1",
+    "quelle": "Ikkarus13/pwa-link-organizer",
+    "ref": "4d09b842d007"
+  },
+  "pwa-notifications": {
+    "version": "1.5.0",
+    "quelle": "Ikkarus13/pwa-notifications",
+    "ref": "858ad96c157e"
+  },
+  "pwa-tray": {
+    "version": "1.1.0",
+    "quelle": "Ikkarus13/pwa-tray",
+    "ref": "221c4ecaf7a7"
+  },
+  "startklar": {
+    "version": "0.4.0",
+    "quelle": "Ikkarus13/startklar",
+    "ref": "ab74eceb2f89"
+  },
+  "tray-collapse": {
+    "version": "f19bfc9",
+    "quelle": "Ikkarus13/tray-collapse",
+    "ref": "f19bfc94c44c"
+  }
+}

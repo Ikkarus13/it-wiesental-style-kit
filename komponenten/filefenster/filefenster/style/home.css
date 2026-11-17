@@ -1,0 +1,106 @@
+/* Start (homeview.py) und Dieser PC (thispcview.py). */
+
+window.filefenster scrolledwindow.home-view,
+window.filefenster scrolledwindow.home-view > viewport,
+window.filefenster .home-view .home-bg {
+  background-color: @content_bg;
+  border: none;
+}
+
+window.filefenster .home-view .home-body {
+  padding: 8px 16px 24px 16px;
+}
+
+window.filefenster .home-view .home-section {
+  margin-bottom: 4px;
+}
+
+/* Abschnittsüberschrift mit Chevron */
+window.filefenster .home-view button.section-header {
+  padding: 0 10px 0 6px;
+  min-height: 32px;
+  margin: 2px 0 4px 0;
+  border-radius: 4px;
+}
+window.filefenster .home-view button.section-header:hover { background-color: @button_hover; }
+window.filefenster .home-view button.section-header:active { background-color: @button_active; }
+window.filefenster .home-view .section-chevron { margin-right: 10px; }
+window.filefenster .home-view .section-title {
+  color: @text;
+  font-weight: 600;
+}
+
+/* Hinweistexte (Favoriten, leere Liste) */
+window.filefenster .home-view .home-hint {
+  color: @text2;
+  margin: 2px 0 14px 28px;
+}
+
+/* Kacheln (Schnellzugriff, Laufwerke) */
+window.filefenster .home-view flowbox.tiles {
+  margin: 0 0 14px 4px;
+  background: none;
+}
+window.filefenster .home-view flowboxchild.tile {
+  padding: 0;
+  margin: 0;
+  border-radius: 4px;
+  background-color: transparent;
+  outline-offset: -1px;
+}
+window.filefenster .home-view flowboxchild.tile:hover { background-color: @hover; }
+window.filefenster .home-view flowboxchild.tile:selected,
+window.filefenster .home-view flowboxchild.tile:selected:backdrop {
+  background-color: @selected;
+  color: @text;
+}
+window.filefenster .home-view flowboxchild.tile:selected:hover { background-color: @selected_hover; }
+window.filefenster .home-view .tile-icon { margin: 0 12px 0 10px; }
+window.filefenster .home-view .tile-name { color: @text; }
+window.filefenster .home-view .tile-sub { color: @text2; }
+window.filefenster .home-view .tile-pin { margin-right: 10px; }
+window.filefenster .home-view .drive-tile .tile-icon { margin: 0 8px 0 6px; }
+window.filefenster .home-view .drive-tile .tile-name,
+window.filefenster .home-view .drive-tile .tile-sub,
+window.filefenster .home-view .drive-tile .capacity-bar { margin-right: 12px; }
+
+/* Liste "Zuletzt verwendet": Hover/Auswahl zeichnet RowHighlighter */
+window.filefenster .home-view treeview.view.recent-list {
+  background-color: transparent;
+  color: @text;
+  margin: 0 0 8px 4px;
+  -GtkTreeView-vertical-separator: 0;
+  -GtkTreeView-horizontal-separator: 0;
+  outline-width: 0;
+}
+window.filefenster .home-view treeview.view.recent-list:hover,
+window.filefenster .home-view treeview.view.recent-list:selected,
+window.filefenster .home-view treeview.view.recent-list:selected:focus,
+window.filefenster .home-view treeview.view.recent-list:backdrop,
+window.filefenster .home-view treeview.view.recent-list:selected:backdrop {
+  background-color: transparent;
+  color: @text;
+}
+window.filefenster .home-view treeview.view.recent-list header {
+  background: none;
+  border: none;
+}
+window.filefenster .home-view treeview.view.recent-list header button {
+  background-color: transparent;
+  background-image: none;
+  border: none;
+  border-right: 1px solid @divider;
+  border-radius: 0;
+  box-shadow: none;
+  color: @text2;
+  padding: 0 8px;
+  min-height: 30px;
+  font-weight: normal;
+}
+window.filefenster .home-view treeview.view.recent-list header button:first-child { padding-left: 32px; }
+window.filefenster .home-view treeview.view.recent-list header button:hover {
+  background-color: @button_hover;
+  color: @text;
+}
+window.filefenster .home-view treeview.view.recent-list header button:last-child { border-right: none; }
+window.filefenster .home-view treeview.view.recent-list header button label { color: inherit; }

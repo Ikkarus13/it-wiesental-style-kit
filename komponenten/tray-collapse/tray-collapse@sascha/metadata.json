@@ -1,0 +1,8 @@
+{
+    "uuid": "tray-collapse@sascha",
+    "name": "Tray einklappen",
+    "description": "Blendet Tray-Symbole hinter einem kleinen Pfeil aus – wie unter Windows. Rechtsklick legt fest, welche Symbole immer sichtbar bleiben.",
+    "cinnamon-version": ["6.0", "6.2", "6.4", "6.6"],
+    "max-instances": 1,
+    "author": "sascha"
+}

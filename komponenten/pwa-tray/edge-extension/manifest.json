@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "PWA-Tray: Teams-Status",
+  "version": "1.0.2",
+  "description": "Meldet Teams-Status und ungelesene Nachrichten an das PWA-Tray-Symbol (lokal, nichts geht ins Internet).",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA200x0xDpbPNEgpzmCxlYbmXJhWSgxv6I9LBTbSlZHtPTPBahu9yZpepC3iJp1YqqtbPnpoecwfEbZabdwpMFcnA5AC5uMLgfIO59SW2rrUo4rd/5BbzcoYTrIxpoPS4duE89nAZYmzveWd+SVbvUkUD0A+k+a4jyZGSgU5cBvuqcgrGutkNRNnYZeK1O3HD8QaHWy8UqyTOHSeyuumdNpQehJJ2zpxDzFDeDis/MRUCohNkid71tBO6a/29uKybdzrQogVbGx9Uf9/YI8OcHPbCHvGQMt0F+IuxLy5VxNA1Sibw9ho+QMJAAJiMf2C1LwbV2fnKoguPWLP0re2FUeQIDAQAB",
+  "permissions": [
+    "nativeMessaging",
+    "scripting"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://teams.cloud.microsoft/*",
+        "https://teams.microsoft.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "host_permissions": [
+    "https://teams.cloud.microsoft/*",
+    "https://teams.microsoft.com/*"
+  ]
+}

@@ -1,0 +1,41 @@
+/* Fortschrittsfenster (progress.py) – Kopieren/Verschieben/Löschen */
+window.filefenster.progress-dialog .job { padding: 18px 24px 16px 24px; }
+window.filefenster.progress-dialog .job-head { color: @text; }
+window.filefenster.progress-dialog .job-pct { font-size: 13.5pt; color: @text; margin-top: 2px; }
+
+window.filefenster.progress-dialog button.job-btn {
+  min-width: 32px; min-height: 32px; padding: 0;
+  background: transparent; border: none; border-radius: 4px; box-shadow: none;
+}
+window.filefenster.progress-dialog button.job-btn:hover { background-color: @button_hover; }
+window.filefenster.progress-dialog button.job-btn:active { background-color: @button_active; }
+
+window.filefenster.progress-dialog progressbar trough {
+  min-height: 14px; padding: 0;
+  background-color: @control_bg; border: 1px solid @control_border; border-radius: 2px;
+}
+window.filefenster.progress-dialog progressbar progress {
+  min-height: 14px; border: none; border-radius: 1px; background-color: #06b025;
+}
+window.filefenster.progress-dialog .paused progressbar progress { background-color: #c29c00; }
+
+window.filefenster.progress-dialog .job-info { margin-top: 4px; }
+window.filefenster.progress-dialog .job-info label.key { color: @text2; }
+
+window.filefenster.progress-dialog .conflict-msg { margin-bottom: 4px; }
+window.filefenster.progress-dialog .conflict-facts { color: @text2; }
+window.filefenster.progress-dialog button.conflict-choice {
+  padding: 9px 10px; margin: 0 -10px;
+  background: transparent; border: none; border-radius: 4px; box-shadow: none;
+}
+window.filefenster.progress-dialog button.conflict-choice label { color: @accent; font-size: 10.5pt; }
+window.filefenster.progress-dialog button.conflict-choice:hover { background-color: @hover; }
+window.filefenster.progress-dialog button.conflict-choice:active { background-color: @selected; }
+window.filefenster.progress-dialog button.conflict-choice:disabled label { color: @text3; }
+window.filefenster.progress-dialog button.conflict-choice:disabled image { opacity: 0.4; }
+
+window.filefenster.progress-dialog button.details-toggle {
+  margin: 8px 0; padding: 4px 8px;
+  background: transparent; border: none; border-radius: 4px; box-shadow: none; color: @text;
+}
+window.filefenster.progress-dialog button.details-toggle:hover { background-color: @button_hover; }

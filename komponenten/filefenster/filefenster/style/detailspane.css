@@ -1,0 +1,22 @@
+/* Detailbereich rechts (detailspane.py). Den 1px-Trenner links setzt das Fenster. */
+
+window.filefenster .details-pane,
+window.filefenster .details-pane viewport,
+window.filefenster .details-pane stack {
+  background-color: @content_bg;
+  border: none;
+  box-shadow: none;
+}
+window.filefenster .details-pane .dp-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: @text;
+}
+window.filefenster .details-pane .dp-type { color: @text2; }
+window.filefenster .details-pane .dp-heading {
+  font-weight: 600;
+  color: @text;
+}
+window.filefenster .details-pane .dp-key { color: @text2; }
+window.filefenster .details-pane .dp-value { color: @text; }
+window.filefenster .details-pane .dp-placeholder { color: @text2; }
