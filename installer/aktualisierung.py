@@ -26,7 +26,6 @@ from . import ablauf, marke
 REPO = (marke.B.get("update_repo") or "").strip()
 # WST_UPDATE_API nur für Tests (lokaler Server statt GitHub)
 API = os.environ.get("WST_UPDATE_API") or f"https://api.github.com/repos/{REPO}/releases/latest"
-STAND = os.path.join(ablauf.ZIEL, "update.json")
 CACHE = os.path.join(os.environ.get("XDG_CACHE_HOME") or os.path.expanduser("~/.cache"),
                      marke.KURZ)
 _MAX_PAKET = 200 * 1024 * 1024
@@ -130,46 +129,87 @@ def aufraeumen():
 
 
 def _stand():
-    try:
-        with open(STAND, encoding="utf-8") as f:
-            return json.load(f)
-    except (OSError, ValueError):
-        return {}
+    return ablauf.stand()
 
 
 def _stand_setzen(**werte):
-    d = _stand()
-    d.update(werte)
+    ablauf.stand_setzen(**werte)
+
+
+def _melden(titel, text, aktionen):
+    """notify-send mit Knöpfen; gibt (zugestellt, gewählte Aktion) zurück."""
+    import subprocess
+    symbol = os.path.join(ablauf.ZIEL, "branding", "symbol.svg")
+    cmd = ["notify-send", "-a", marke.PRODUKT, "-i", symbol]
+    for name, beschriftung in aktionen:
+        cmd += ["-A", f"{name}={beschriftung}"]
     try:
-        os.makedirs(ablauf.ZIEL, exist_ok=True)
-        with open(STAND, "w", encoding="utf-8") as f:
-            json.dump(d, f, indent=1)
+        p = subprocess.run(cmd + [titel, text], capture_output=True, text=True, timeout=6 * 3600)
+    except (OSError, subprocess.SubprocessError):
+        return False, ""
+    return p.returncode == 0, p.stdout.strip()
+
+
+def _oeffnen(cmd):
+    import subprocess
+    try:
+        subprocess.Popen(cmd, start_new_session=True, stdin=subprocess.DEVNULL,
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except OSError:
         pass
 
 
-def melden_beim_anmelden():
-    """Autostart: einmal prüfen und bei neuer Version eine Meldung zeigen.
-    Ein Klick auf «Aktualisieren» öffnet die Verwaltung des Kits."""
-    import subprocess
+def _update_melden():
+    """True, wenn eine Update-Meldung gezeigt wurde."""
     try:
         info = pruefen()
     except Fehler:
-        return 0
+        return False
     if not info or _stand().get("gemeldet") == info["version"]:
-        return 0
-    symbol = os.path.join(ablauf.ZIEL, "branding", "symbol.svg")
-    try:
-        p = subprocess.run(
-            ["notify-send", "-a", marke.PRODUKT, "-i", symbol, "-A", "oeffnen=Aktualisieren",
-             f"Update für {marke.PRODUKT}",
-             f"Version {info['version']} ist verfügbar (installiert: {installierte_version()})."],
-            capture_output=True, text=True, timeout=6 * 3600)
-    except (OSError, subprocess.SubprocessError):
-        return 0
-    if p.returncode == 0:
+        return False
+    ok, aktion = _melden(f"Update für {marke.PRODUKT}",
+                         f"Version {info['version']} ist verfügbar "
+                         f"(installiert: {installierte_version()}).",
+                         [("oeffnen", "Aktualisieren")])
+    if ok:
         _stand_setzen(gemeldet=info["version"])   # pro Version nur einmal melden
-    if p.stdout.strip() == "oeffnen":
-        subprocess.Popen(["/usr/bin/python3", "-I", os.path.join(ablauf.ZIEL, "installer", "main.py"),
-                          "--verwalten"], start_new_session=True)
+    if aktion == "oeffnen":
+        _oeffnen(["/usr/bin/python3", "-I", os.path.join(ablauf.ZIEL, "installer", "main.py"),
+                  "--verwalten"])
+    return ok
+
+
+def _erinnerung():
+    """Einmal, einige Tage nach der Installation: «Gefällt es dir?» mit Bewerten/Unterstützen."""
+    tage = marke.B.get("erinnerung_tage") or 0
+    st = _stand()
+    seit = st.get("installiert_am")
+    if not marke.HAT_DANKE or not tage or st.get("erinnert") or not isinstance(seit, (int, float)):
+        return
+    if time.time() - seit < tage * 86400:
+        return
+    bew = marke.B.get("bewerten") or {}
+    unt = marke.B.get("unterstuetzen") or {}
+    aktionen = []
+    if bew.get("link"):
+        aktionen.append(("bewerten", bew.get("knopf") or "Bewerten"))
+    if unt.get("link_frei"):
+        aktionen.append(("unterstuetzen", "Unterstützen"))
+    aktionen.append(("nein", "Nein danke"))
+    ok, aktion = _melden(f"Gefällt dir das {marke.PRODUKT}?",
+                         "Es ist kostenlos. Wenn es dir gefällt, freuen wir uns über eine "
+                         "Bewertung – und wer mag, kann die Arbeit gerne unterstützen.",
+                         aktionen)
+    if ok:
+        _stand_setzen(erinnert=True)          # nur einmal
+    ziel = {"bewerten": bew.get("link"), "unterstuetzen": unt.get("link_frei")}.get(aktion)
+    if ziel:
+        _oeffnen(["xdg-open", ziel])
+
+
+def melden_beim_anmelden():
+    """Autostart: nach Updates suchen (Meldung mit «Aktualisieren», öffnet die Verwaltung);
+    sonst einmalig, einige Tage nach der Installation, um eine Bewertung bitten."""
+    if not _update_melden():
+        _erinnerung()
     return 0

@@ -26,6 +26,13 @@ _STANDARD = {
     "leiste_titel": "",
     # GitHub-Repo (Besitzer/Name) mit den Releases des Kits; leer = keine Update-Suche
     "update_repo": "",
+    # optional: Unterstützen nach der Installation und in der Erinnerung
+    #   {"link": "…{betrag}…", "link_frei": "…", "betraege": [5, 10, 20], "waehrung": "€"}
+    "unterstuetzen": {},
+    # optional: «Bewerten» (z. B. Stern auf GitHub): {"link": "…", "text": "…"}
+    "bewerten": {},
+    # einmalige Erinnerung «Gefällt es dir?» so viele Tage nach der Installation (0 = nie)
+    "erinnerung_tage": 14,
 }
 
 
@@ -42,4 +49,5 @@ def laden():
 B = laden()
 PRODUKT = B["produkt"]
 # technischer Name für Ordner, Startmenü-Eintrag und Richtlinien-Datei, z. B. «mein-style-kit»
+HAT_DANKE = bool((B.get("unterstuetzen") or {}).get("link_frei") or (B.get("bewerten") or {}).get("link"))
 KURZ = re.sub(r"[^a-z0-9]+", "-", PRODUKT.lower()).strip("-") or "style-kit"

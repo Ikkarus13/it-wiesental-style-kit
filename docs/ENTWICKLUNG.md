@@ -71,6 +71,10 @@ Neue Versionen kommen nur mit einem neuen Kit-Release:
 | `farbe` | Akzentfarbe (Knöpfe, Fortschritt, aktiver Schritt) |
 | `logo_text`, `logo_punkt` | Wortmarke als Text mit farbigem Punkt statt `logo.svg`/`logo.png` |
 | `leiste_titel` | kürzerer Titel unter dem Logo in der Seitenleiste (sonst `produkt`) |
+| `update_repo` | GitHub-Repo (`Besitzer/Name`) mit den Releases des Kits; leer = keine Update-Suche (siehe «Updates») |
+| `unterstuetzen` | optional: `{"link": "…{betrag}…", "link_frei": "…", "betraege": [5, 10, 20], "waehrung": "€"}` – Karte «Gefällt dir …?» auf der Fertig-Seite (nur Assistent, nicht beim Aktualisieren) |
+| `bewerten` | optional: `{"link": "…", "knopf": "★ Stern auf GitHub"}` |
+| `erinnerung_tage` | einmalige Meldung «Gefällt dir …?» so viele Tage nach einer Installation über den Assistenten (Standard 14, 0 = nie; nur wenn `unterstuetzen` oder `bewerten` gesetzt) |
 | `stil` | optional: `leiste_bg`, `leiste_text`, `fuss_bg`, `fuss_text`, `akzent_text`, `radius`, `schrift_text`, `schrift_groesse`, `schrift_titel`, `schrift_mono` |
 
 Weitere Dateien: `logo.svg`/`logo.png`, `symbol.svg` (Fenstersymbol), `schriften/*.ttf`

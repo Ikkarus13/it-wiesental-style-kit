@@ -141,6 +141,17 @@ Leiste, Design und Standard-Dateimanager werden dabei zurückgestellt.
 - Die Browser-Erweiterungen von PWA-Tray und PWA link organizer müssen einmal von Hand geladen
   werden (der Assistent zeigt am Ende, wie).
 
+## Unterstützen
+
+Das Style Kit ist kostenlos. Wenn es dir gefällt:
+
+- ⭐ Gib dem Projekt einen **Stern** hier auf GitHub (oben rechts) – das hilft anderen, es zu finden.
+- ☕ **Unterstütze die Arbeit** per PayPal:
+  [5 €](https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=hallo%40it-wiesental.de&item_name=IT-Wiesental%20Style%20Kit%20unterst%C3%BCtzen&currency_code=EUR&no_shipping=1&amount=5) · [10 €](https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=hallo%40it-wiesental.de&item_name=IT-Wiesental%20Style%20Kit%20unterst%C3%BCtzen&currency_code=EUR&no_shipping=1&amount=10) · [20 €](https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=hallo%40it-wiesental.de&item_name=IT-Wiesental%20Style%20Kit%20unterst%C3%BCtzen&currency_code=EUR&no_shipping=1&amount=20) · [anderer Betrag](https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=hallo%40it-wiesental.de&item_name=IT-Wiesental%20Style%20Kit%20unterst%C3%BCtzen&currency_code=EUR&no_shipping=1)
+
+Der Assistent zeigt dieselben Möglichkeiten nach der Installation und erinnert einmalig zwei
+Wochen später daran – danach nie wieder.
+
 ## Lizenz
 
 **Freeware:** kostenlos nutzbar, privat und geschäftlich, aber nicht Open Source. Verändern,

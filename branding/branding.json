@@ -20,5 +20,20 @@
     "schrift_groesse": 10,
     "schrift_titel": "Bricolage Grotesque",
     "schrift_mono": "IBM Plex Mono"
-  }
+  },
+  "unterstuetzen": {
+    "link": "https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=hallo%40it-wiesental.de&item_name=IT-Wiesental%20Style%20Kit%20unterst%C3%BCtzen&currency_code=EUR&no_shipping=1&amount={betrag}",
+    "link_frei": "https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=hallo%40it-wiesental.de&item_name=IT-Wiesental%20Style%20Kit%20unterst%C3%BCtzen&currency_code=EUR&no_shipping=1",
+    "betraege": [
+      5,
+      10,
+      20
+    ],
+    "waehrung": "€"
+  },
+  "bewerten": {
+    "link": "https://github.com/Ikkarus13/it-wiesental-style-kit",
+    "knopf": "★ Stern auf GitHub"
+  },
+  "erinnerung_tage": 14
 }

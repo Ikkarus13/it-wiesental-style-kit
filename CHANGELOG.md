@@ -1,5 +1,10 @@
 # Änderungen
 
+## 1.1.2
+
+- Nach der Installation: «Gefällt dir das Style Kit?» mit Stern auf GitHub und Unterstützen per PayPal (5 / 10 / 20 € oder anderer Betrag). Zwei Wochen später einmalig eine Erinnerung, danach nie wieder.
+- GitHub: Sponsor-Knopf (FUNDING.yml) und Abschnitt «Unterstützen» in der README.
+
 ## 1.1.1
 
 - Cloud Sync 2.4.1: Quelle heisst jetzt Ikkarus13/cloud-sync (Repository umbenannt).

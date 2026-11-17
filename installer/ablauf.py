@@ -69,6 +69,7 @@ class Auswahl:
     webapps: dict = field(default_factory=dict)     # {"outlook": "chrome", …}
     browser_seite: bool = False               # Browser-Teil wurde angeboten
     aktualisieren: bool = False               # Update: Einstellungen des Nutzers nicht anfassen
+    erinnern: bool = False                    # Assistent: später einmal «Gefällt es dir?» zeigen
 
     def hat(self, kid):
         return kid in self.komponenten
@@ -409,6 +410,8 @@ class Installation:
                             dirs_exist_ok=True)
             shutil.copy(os.path.join(PAKET, "VERSION"), os.path.join(ZIEL, "VERSION"))
         _entfernen_starter()
+        if self.a.erinnern and not self.a.aktualisieren and marke.HAT_DANKE:
+            stand_setzen(installiert_am=time.time(), nur_wenn_neu=True)
         verwaltet_schreiben(list(komp))
         if self.a.webapps:
             namen = ", ".join(f"{katalog.WEBAPP_NACH_ID[w].name} ({katalog.BROWSER_NACH_ID[b].name})"
@@ -479,6 +482,31 @@ def _rclone_ok():
         return False
 
 
+STAND = os.path.join(ZIEL, "update.json")     # Update- und Erinnerungsstand
+
+
+def stand():
+    try:
+        with open(STAND, encoding="utf-8") as f:
+            d = json.load(f)
+        return d if isinstance(d, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def stand_setzen(nur_wenn_neu=False, **werte):
+    d = stand()
+    for k, v in werte.items():
+        if not (nur_wenn_neu and k in d):
+            d[k] = v
+    try:
+        os.makedirs(ZIEL, exist_ok=True)
+        with open(STAND, "w", encoding="utf-8") as f:
+            json.dump(d, f, indent=1)
+    except OSError:
+        pass
+
+
 VERWALTET = os.path.join(CONF, "style-kit", "verwaltet.json")
 UPDATE_AUTOSTART = os.path.join(CONF, "autostart", f"{marke.KURZ}-update.desktop")
 
@@ -501,7 +529,7 @@ def verwaltet_schreiben(komponenten):
                    "verwalten": ["/usr/bin/python3", "-I", main, "--verwalten"]},
                   f, indent=2, ensure_ascii=False)
     os.replace(tmp, VERWALTET)
-    if (marke.B.get("update_repo") or "").strip():
+    if (marke.B.get("update_repo") or "").strip() or marke.HAT_DANKE:
         os.makedirs(os.path.dirname(UPDATE_AUTOSTART), exist_ok=True)
         with open(UPDATE_AUTOSTART, "w", encoding="utf-8") as f:
             f.write(f"""[Desktop Entry]

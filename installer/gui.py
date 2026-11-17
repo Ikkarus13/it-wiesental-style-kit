@@ -453,7 +453,7 @@ class Assistent(Gtk.Window):
 
     def auswahl(self):
         gew = self.gewaehlt()
-        a = ablauf.Auswahl(komponenten=gew)
+        a = ablauf.Auswahl(komponenten=gew, erinnern=True)
         if "design" in gew:
             a.design = self.cmb_design.get_active_id() or "dunkel"
             a.leiste_mittig = self.cb_mittig.get_active()
@@ -781,12 +781,50 @@ class Assistent(Gtk.Window):
         self.inst_titel.set_text("Installation abgeschlossen" if ok
                                  else "Installation mit Fehlern abgeschlossen")
         self.lb_schritt.set_text(f"Protokoll: {self.log_datei}")
-        self._fertig_fuellen(ok, self.inst.hinweise)
+        self._fertig_fuellen(ok, self.inst.hinweise, danke=ok)
         self.btn_weiter.set_sensitive(True)
         self.btn_abbrechen.set_sensitive(True)
         return False
 
-    def _fertig_fuellen(self, ok, hinweise):
+    def _link(self, url):
+        try:
+            Gtk.show_uri_on_window(self, url, Gdk.CURRENT_TIME)
+        except GLib.Error:
+            subprocess.Popen(["xdg-open", url], start_new_session=True)
+
+    def _danke_karte(self):
+        """«Gefällt dir das Kit?» – Bewerten und Unterstützen (nur wenn im Branding hinterlegt)."""
+        unt = self.b.get("unterstuetzen") or {}
+        bew = self.b.get("bewerten") or {}
+        if not marke.HAT_DANKE:
+            return None
+        k = karte()
+        k.pack_start(zeile(label(
+            f"<b>Gefällt dir das {GLib.markup_escape_text(self.b['produkt'])}?</b>\n"
+            "Es ist kostenlos. Über eine Bewertung freuen wir uns – und wer mag, kann die "
+            "Arbeit gerne unterstützen.", markup=True)), False, False, 0)
+        r = Gtk.Box(spacing=8)
+        r.get_style_context().add_class("wst-zeile")
+        if bew.get("link"):
+            b = Gtk.Button(label=bew.get("knopf") or "Bewerten")
+            b.connect("clicked", lambda *_: self._link(bew["link"]))
+            r.pack_start(b, False, False, 0)
+        w = unt.get("waehrung") or "€"
+        if unt.get("link"):
+            for betrag in unt.get("betraege") or []:
+                b = Gtk.Button(label=f"{betrag} {w}")
+                b.get_style_context().add_class("wst-primaer")
+                b.connect("clicked", lambda _b, x=betrag: self._link(
+                    unt["link"].replace("{betrag}", str(x))))
+                r.pack_start(b, False, False, 0)
+        if unt.get("link_frei"):
+            b = Gtk.Button(label="Anderer Betrag" if unt.get("link") else "Unterstützen")
+            b.connect("clicked", lambda *_: self._link(unt["link_frei"]))
+            r.pack_start(b, False, False, 0)
+        k.pack_start(r, False, False, 0)
+        return k
+
+    def _fertig_fuellen(self, ok, hinweise, danke=False):
         for c in self.fertig_inhalt.get_children():
             c.destroy()
         self.fertig_titel.set_text("Fertig" if ok else "Fertig – mit Fehlern")
@@ -806,6 +844,9 @@ class Assistent(Gtk.Window):
             btn.set_halign(Gtk.Align.START)
             btn.connect("clicked", self._abmelden)
             self.fertig_inhalt.pack_start(btn, False, False, 0)
+        k = self._danke_karte() if danke else None
+        if k:
+            self.fertig_inhalt.pack_start(k, False, False, 0)
         if self.b.get("kontakt") or self.b.get("web"):
             self.fertig_inhalt.pack_start(label(
                 "Fragen? " + " · ".join(x for x in (self.b.get("kontakt"), self.b.get("web")) if x),
