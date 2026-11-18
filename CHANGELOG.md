@@ -1,5 +1,9 @@
 # Änderungen
 
+## 1.1.4
+
+- Aktualisieren zeigt beim Überlauf-Pfeil und beim PWA link organizer keine Anleitungen für die Erstinstallation mehr (nur bei einem Fehler).
+
 ## 1.1.3
 
 - Aktualisieren lässt Einstellungen in Ruhe: Startklar, FileFenster, PWA-Benachrichtigungen und Emoji-Panel laufen im Update-Modus (Leiste, Standard-Dateimanager, Autostart und abgeschaltete Erweiterungen bleiben), der Überlauf-Pfeil wird nicht wieder eingefügt, keine alten «Noch zu tun»-Hinweise mehr.

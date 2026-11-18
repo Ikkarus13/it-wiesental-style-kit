@@ -260,6 +260,23 @@ class Installation:
         os.chmod(pfad, 0o755)
         return self.lauf(["/bin/bash", pfad, *args], cwd=d, env=env)
 
+    def _sh_update(self, kid, skript, *args):
+        """Tool-Installer ohne eigenen Update-Modus: Bei einem Update seine Ausgabe
+        (Anleitungen für die Erstinstallation) nur bei einem Fehler zeigen."""
+        if not self.a.aktualisieren:
+            return self._sh(kid, skript, *args)
+        gesammelt = []
+        alt, self.log = self.log, gesammelt.append
+        try:
+            return self._sh(kid, skript, *args)
+        except Abbruch:
+            self.log = alt
+            for z in gesammelt:
+                self.log(z)
+            raise
+        finally:
+            self.log = alt
+
     # ------------------------------------------------------------------ Komponenten
     def _inst_design(self):
         d = self._ordner("design")
@@ -306,7 +323,7 @@ class Installation:
         self._sh("filefenster", "installieren.sh", *self._upd("--update"))
 
     def _inst_tray_collapse(self):
-        self._sh("tray-collapse", "install.sh")
+        self._sh_update("tray-collapse", "install.sh")
         if not self.a.aktualisieren:
             self.log(leiste.applet_hinzufuegen_vor_tray())
 
@@ -352,7 +369,7 @@ class Installation:
         d = self._ordner("pwa-link-organizer")
         local_state = os.path.join(CONF, "google-chrome", "Local State")
         if os.path.exists(local_state):
-            self._sh("pwa-link-organizer", "install.sh")
+            self._sh_update("pwa-link-organizer", "install.sh")
         else:
             # Chrome noch nie gestartet: Host-Eintrag selbst schreiben
             self._edge_links_host(d)
