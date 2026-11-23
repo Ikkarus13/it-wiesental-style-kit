@@ -254,6 +254,12 @@ def build(fm_name):
                                                                GLib.Variant("(as)", (paths,))))
                 items.append(free)
             if len(paths) == 1:
+                dlg = FM.MenuItem(name="OneDriveMint::sharedlg", label="Freigeben …",
+                                  tip="Link erstellen, Personen einladen, Zugriff verwalten",
+                                  icon="emblem-shared")
+                dlg.connect("activate", lambda *_: self._call("ShareDialog",
+                                                              GLib.Variant("(s)", (paths[0],))))
+                items.append(dlg)
                 share = FM.MenuItem(name="OneDriveMint::share", label="OneDrive-Link kopieren",
                                     tip="Freigabelink erstellen und in die Zwischenablage kopieren",
                                     icon="onedrive-mint")

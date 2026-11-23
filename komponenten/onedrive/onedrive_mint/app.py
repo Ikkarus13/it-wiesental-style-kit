@@ -453,6 +453,14 @@ class OneDriveApp(Gtk.Application):
             GLib.idle_add(self.open_uri, url or "https://onedrive.live.com/")
         threading.Thread(target=work, daemon=True).start()
 
+    def show_share(self, path):
+        """Freigabedialog wie unter Windows (Link, Personen einladen, Zugriff verwalten)."""
+        from .share_ui import ShareDialog
+        dlg = ShareDialog(self, path)
+        self.add_window(dlg)
+        dlg.present()
+        return False
+
     def share(self, path):
         def work():
             try:

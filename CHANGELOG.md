@@ -1,5 +1,10 @@
 # Änderungen
 
+## 1.2.0
+
+- Enthalten: Cloud Sync 2.5.0 – neu: Freigeben wie unter Windows (Link für jeden oder die Organisation, ansehen/bearbeiten, Ablaufdatum, Kennwort; Personen einladen; Zugriff verwalten). Dazu: online gelöschte Dateien verschwinden spätestens nach 5 Minuten auch lokal, zuverlässiges Wiederverbinden nach einem Netzausfall.
+- Enthalten: FileFenster 0.16.1 («Freigeben …» im Rechtsklickmenü von Cloud-Ordnern).
+
 ## 1.1.4
 
 - Aktualisieren zeigt beim Überlauf-Pfeil und beim PWA link organizer keine Anleitungen für die Erstinstallation mehr (nur bei einem Fehler).

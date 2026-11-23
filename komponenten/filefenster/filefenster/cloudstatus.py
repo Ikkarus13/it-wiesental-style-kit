@@ -260,3 +260,8 @@ def free_up(paths):
 
 def open_online(path):
     _call("OpenOnline", GLib.Variant("(s)", (path,)))
+
+
+def share_dialog(path):
+    """Freigabedialog des Cloud-Clients (Link, Personen einladen, Zugriff verwalten)."""
+    _call("ShareDialog", GLib.Variant("(s)", (path,)))

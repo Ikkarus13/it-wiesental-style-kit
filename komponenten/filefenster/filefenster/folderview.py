@@ -3755,6 +3755,7 @@ class FolderView(Gtk.Box):
         if any_local or all_pinned:
             m.item("Speicherplatz freigeben", self._later(cloudstatus.free_up, paths))
         if single:
+            m.item("Freigeben …", self._later(cloudstatus.share_dialog, paths[0]), icon="share")
             m.item("Online anzeigen", self._later(cloudstatus.open_online, paths[0]), icon="globe")
         m.separator()
 

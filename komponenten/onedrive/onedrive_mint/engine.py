@@ -75,6 +75,49 @@ class AccountRuntime:
         return self.view.rel(path)
 
 
+class ShareTarget:
+    """Ein Element fuer den Freigabedialog. Jeder Aufruf holt ein frisches Token (der Dialog
+    kann lange offen sein) und laeuft im Hintergrund-Thread des Aufrufers."""
+
+    def __init__(self, engine, rt, full_path):
+        self.engine, self.rt = engine, rt
+        acc = rt.account
+        self.drive_id = acc.drive_id
+        self.personal = acc.kind == "personal"
+        self.org = acc.org
+        self.account_label = acc.label
+        self._path = full_path
+        self._item = None
+
+    def _token(self):
+        tok = self.engine._fresh_token(self.rt)
+        if not tok:
+            raise graph.GraphError("Keine gültige Anmeldung – bitte das Konto neu anmelden.")
+        return tok
+
+    def item(self, tok):
+        if self._item is None:
+            self._item = graph.item_id(tok, self.drive_id, self._path)
+        return self._item
+
+    def create_link(self, kind, scope, password="", expires=""):
+        tok = self._token()
+        return graph.create_link(tok, self.drive_id, self.item(tok), kind, scope, password,
+                                 expires)
+
+    def invite(self, emails, role, send_mail, message=""):
+        tok = self._token()
+        return graph.invite(tok, self.drive_id, self.item(tok), emails, role, send_mail, message)
+
+    def permissions(self):
+        tok = self._token()
+        return graph.permissions(tok, self.drive_id, self.item(tok))
+
+    def remove(self, perm_id):
+        tok = self._token()
+        graph.remove_permission(tok, self.drive_id, self.item(tok), perm_id)
+
+
 class Engine:
     def __init__(self, settings, on_status, on_changed, on_notify):
         self.settings = settings
@@ -721,6 +764,13 @@ class Engine:
         except graph.GraphError:
             url = ""
         return url or rt.account.web_url
+
+    def share_target(self, path):
+        """Alles, was der Freigabedialog fuer path braucht. Wirft graph.GraphError."""
+        rt, rel = self.locate(path)
+        if not rt or (rel and rel.startswith(".Trash-")):
+            raise graph.GraphError("Das Element liegt nicht in einem verbundenen Konto.")
+        return ShareTarget(self, rt, "/".join(p for p in (rt.account.remote_path, rel) if p))
 
     def share_link(self, path):
         rt, rel = self.locate(path)

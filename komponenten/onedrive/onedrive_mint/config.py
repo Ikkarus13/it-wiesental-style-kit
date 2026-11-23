@@ -18,7 +18,7 @@ from . import marke
 
 APP_ID = "io.github.OneDriveMint"
 APP_NAME = marke.NAME
-VERSION = "2.4.2"
+VERSION = "2.5.0"
 # Hier werden Updates gesucht (GitHub-Releases, siehe updater.py)
 UPDATE_REPO = marke.UPDATE_REPO          # leer = keine eigene Update-Quelle
 

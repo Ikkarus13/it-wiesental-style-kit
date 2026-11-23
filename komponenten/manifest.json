@@ -10,14 +10,14 @@
     "ref": "dd26bafdcf08"
   },
   "filefenster": {
-    "version": "0.16.0",
+    "version": "0.16.1",
     "quelle": "Ikkarus13/filefenster",
-    "ref": "4afc78a30a4b"
+    "ref": "b370576846d3"
   },
   "onedrive": {
-    "version": "2.4.2",
+    "version": "2.5.0",
     "quelle": "Ikkarus13/cloud-sync",
-    "ref": "c52a0cd77efb"
+    "ref": "1795e8231387"
   },
   "pwa-link-organizer": {
     "version": "1.2.1",

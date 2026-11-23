@@ -1,4 +1,4 @@
-"""Minimaler Microsoft-Graph-Zugriff (nur lesend) fuer Kontoinfos und Web-Links."""
+"""Minimaler Microsoft-Graph-Zugriff: Kontoinfos, Web-Links und Freigaben."""
 
 import base64
 import json
@@ -23,6 +23,26 @@ def _get(url, access_token, timeout=20):
         try:
             msg = json.loads(e.read())["error"]["message"]
         except (ValueError, KeyError):
+            msg = str(e)
+        raise GraphError(msg) from None
+    except (urllib.error.URLError, OSError) as e:
+        raise GraphError(str(e)) from None
+
+
+def _call(method, url, access_token, body=None, timeout=30):
+    """Schreibender Aufruf (POST/DELETE); Fehlertext von Graph als GraphError."""
+    data = json.dumps(body).encode() if body is not None else None
+    req = urllib.request.Request(url, data=data, method=method, headers={
+        "Authorization": "Bearer " + access_token, "Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            raw = r.read()
+            return json.loads(raw) if raw else {}
+    except urllib.error.HTTPError as e:
+        try:
+            err = json.loads(e.read())["error"]
+            msg = err.get("message") or err.get("code") or str(e)
+        except (ValueError, KeyError, TypeError):
             msg = str(e)
         raise GraphError(msg) from None
     except (urllib.error.URLError, OSError) as e:
@@ -244,3 +264,79 @@ def resolve_odopen(token, params):
     site = p("webTitle") or _site_name(token, f"{host},{site_id},{web_id}")
     return LibraryInfo(host, drive["id"], p("listTitle") or drive.get("name", ""),
                        drive.get("webUrl", ""), rel, site)
+
+
+# ---------------------------------------------------------------- Freigaben
+
+def item_id(access_token, drive_id, rel_path):
+    """Graph-ID eines Elements (Pfad relativ zur Wurzel des Laufwerks)."""
+    if rel_path:
+        url = f"{GRAPH}/drives/{drive_id}/root:{urllib.parse.quote('/' + rel_path)}"
+    else:
+        url = f"{GRAPH}/drives/{drive_id}/root"
+    return _get(url + "?$select=id", access_token)["id"]
+
+
+def create_link(access_token, drive_id, item, kind, scope, password="", expires=""):
+    """Freigabelink erstellen. kind: view|edit, scope: anonymous|organization.
+    expires: ISO-Datum (YYYY-MM-DD) oder leer. Liefert die Link-Adresse."""
+    body = {"type": kind, "scope": scope}
+    if password:
+        body["password"] = password
+    if expires:
+        body["expirationDateTime"] = expires + "T23:59:59Z"
+    res = _call("POST", f"{GRAPH}/drives/{drive_id}/items/{item}/createLink", access_token, body)
+    return (res.get("link") or {}).get("webUrl", "")
+
+
+def invite(access_token, drive_id, item, emails, role, send_mail=True, message=""):
+    """Bestimmte Personen einladen (role: read|write). Liefert den Link, falls Graph einen
+    zurueckgibt (bei send_mail=False zum selbst Weitergeben)."""
+    body = {"recipients": [{"email": e} for e in emails], "requireSignIn": True,
+            "sendInvitation": bool(send_mail), "roles": [role]}
+    if message and send_mail:
+        body["message"] = message
+    res = _call("POST", f"{GRAPH}/drives/{drive_id}/items/{item}/invite", access_token, body)
+    for perm in res.get("value", []):
+        url = (perm.get("link") or {}).get("webUrl")
+        if url:
+            return url
+    return ""
+
+
+def permissions(access_token, drive_id, item):
+    """Bestehende Freigaben als Liste von dicts: id, wer, recht, link, geerbt, besitzer."""
+    res = _get(f"{GRAPH}/drives/{drive_id}/items/{item}/permissions", access_token)
+    out = []
+    for p in res.get("value", []):
+        roles = p.get("roles") or []
+        link = p.get("link") or {}
+        people = []
+        for g in [p.get("grantedToV2") or p.get("grantedTo") or {}] + \
+                list(p.get("grantedToIdentitiesV2") or p.get("grantedToIdentities") or []):
+            u = (g or {}).get("user") or (g or {}).get("siteUser") or {}
+            name = u.get("displayName") or u.get("email") or ""
+            if name and name not in people:
+                people.append(name)
+        if link:
+            scope = {"anonymous": "Jeder mit dem Link", "organization": "Personen in der "
+                     "Organisation", "users": "Bestimmte Personen",
+                     "existingAccess": "Personen mit vorhandenem Zugriff"}.get(
+                         link.get("scope"), link.get("scope") or "Link")
+            who = scope + (f": {', '.join(people)}" if people and link.get("scope") == "users"
+                           else "")
+        else:
+            who = ", ".join(people) or "Unbekannt"
+        edit = "write" in roles or link.get("type") == "edit" or "owner" in roles
+        out.append({"id": p.get("id"), "wer": who,
+                    "recht": "Besitzer" if "owner" in roles else
+                             ("Kann bearbeiten" if edit else "Kann ansehen"),
+                    "link": link.get("webUrl", ""),
+                    "ablauf": (p.get("expirationDateTime") or "")[:10],
+                    "geerbt": bool(p.get("inheritedFrom")),
+                    "besitzer": "owner" in roles})
+    return out
+
+
+def remove_permission(access_token, drive_id, item, perm_id):
+    _call("DELETE", f"{GRAPH}/drives/{drive_id}/items/{item}/permissions/{perm_id}", access_token)

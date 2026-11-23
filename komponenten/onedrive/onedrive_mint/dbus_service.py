@@ -25,6 +25,9 @@ XML = f"""
     <method name="Share">
       <arg type="s" name="path" direction="in"/>
     </method>
+    <method name="ShareDialog">
+      <arg type="s" name="path" direction="in"/>
+    </method>
     <method name="GetState">
       <arg type="s" name="path" direction="in"/>
       <arg type="s" name="state" direction="out"/>
@@ -82,6 +85,8 @@ class DBusService:
                 app.open_online(args[0])
             elif method == "Share":
                 app.share(args[0])
+            elif method == "ShareDialog":
+                GLib.idle_add(app.show_share, args[0])
             elif method == "GetState":
                 # Ordnerstatus liest ggf. den Mount -> nicht im Hauptthread blockieren
                 def work(path=args[0]):

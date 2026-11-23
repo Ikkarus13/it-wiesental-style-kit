@@ -339,6 +339,10 @@ def is_auth_error(msg):
             or ("token" in low and "expired" in low))
 
 
+# So lange darf rclone fuer das Einhaengen brauchen, bevor es neu gestartet wird
+MOUNT_TIMEOUT = 180
+
+
 def rescue_local_files(mount_path, acc_id):
     """Inhalt des (nicht eingehaengten) Mount-Ordners in einen Rettungsordner verschieben."""
     dest = base = os.path.join(config.STATE_DIR, "gerettet", acc_id,
@@ -452,7 +456,10 @@ class Mount:
             "--vfs-cache-max-age", "876000h",
             "--vfs-cache-poll-interval", "1m",
             "--vfs-write-back", "5s",
-            "--dir-cache-time", "1000h",
+            # Aenderungen meldet Microsoft jede Minute (--poll-interval). Geloeschte Dateien fehlen
+            # darin bei Geschaeftskonten aber manchmal – spaetestens nach 5 Minuten wird eine
+            # Ordnerliste deshalb beim naechsten Zugriff neu geholt.
+            "--dir-cache-time", "5m",
             # kleiner Vorauslade-Puffer: ein kurzer Blick (Dateityp-Erkennung) laedt nicht 16 MB
             "--buffer-size", "2M",
             "--poll-interval", "1m",
@@ -501,6 +508,10 @@ class Mount:
             if self._stop.is_set():
                 break
             error = self._last_error(stderr)
+            if getattr(self, "_start_timeout", False):
+                self._start_timeout = False
+                error = ("Keine Antwort von Microsoft beim Verbinden (Netzwerk). "
+                         "Wird automatisch erneut versucht.")
             if "is not empty" in error and self._nonempty < 10:
                 # Ein Programm (z. B. beim Anmelden) hat zwischen Aufraeumen und Einhaengen
                 # schon wieder etwas angelegt: ohne Fehlermeldung gleich nochmal versuchen.
@@ -522,14 +533,30 @@ class Mount:
         self.on_event(self.account.id, "stopped", "")
 
     def _wait_ready(self):
-        for _ in range(120):
+        """Warten, bis rclone eingehaengt ist und seine Steuerung antwortet.
+
+        Eingehaengt, aber die Steuerung antwortet langsam (z. B. nach einem Netzausfall): weiter
+        warten statt aufzugeben – sonst gilt das Konto als offline, obwohl es laeuft.
+        Nach MOUNT_TIMEOUT immer noch nicht eingehaengt (rclone haengt beim Start, z. B. weil das
+        Netz beim Start weg war): beenden; der Aufrufer startet es mit Wartezeit neu."""
+        start = time.monotonic()
+        while True:
             if self.proc.poll() is not None or self._stop.is_set():
                 return False
+            waited = time.monotonic() - start
             if not is_mounted(self.account.real_path):
+                if waited > MOUNT_TIMEOUT:
+                    self._start_timeout = True
+                    self.proc.terminate()
+                    try:
+                        self.proc.wait(10)
+                    except subprocess.TimeoutExpired:
+                        self.proc.kill()
+                    return False
                 time.sleep(0.5)
                 continue
             try:
-                stats = self._pending_rc.call("vfs/stats", timeout=2)
+                stats = self._pending_rc.call("vfs/stats", timeout=5)
                 if stats.get("diskCache"):
                     dc = stats.get("diskCache", {})
                     self.data_dir, self.meta_dir = dc.get("path", ""), dc.get("pathMeta", "")
@@ -537,8 +564,7 @@ class Mount:
                     return True
             except RcError:
                 pass
-            time.sleep(0.5)
-        return False
+            time.sleep(0.5 if waited < 60 else 5)
 
     def _rotate_log(self):
         path = config.account_log_file(self.account.id)
