@@ -24,7 +24,7 @@ import sys
 import time
 from urllib.parse import urlsplit
 
-VERSION = "1.2.1"
+VERSION = "1.2.3"
 MAX_MESSAGE = 1024 * 1024
 MAX_URL = 32 * 1024
 EDGE_NAMES = ("microsoft-edge", "microsoft-edge-stable", "microsoft-edge-beta", "microsoft-edge-dev")

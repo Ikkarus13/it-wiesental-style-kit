@@ -1,5 +1,9 @@
 # Änderungen
 
+## 1.2.1
+
+- Enthalten: PWA link organizer 1.2.3. Links in einer per Doppelklick geöffneten Mail gehen jetzt auch an Edge; bisher gingen sie in Chrome auf. Neu sind ausserdem «Letzte Entscheidungen» in den Einstellungen der Erweiterung, und die Prüfung wiederholt sich, statt aufzugeben.
+
 ## 1.2.0
 
 - Enthalten: Cloud Sync 2.5.0 – neu: Freigeben wie unter Windows (Link für jeden oder die Organisation, ansehen/bearbeiten, Ablaufdatum, Kennwort; Personen einladen; Zugriff verwalten). Dazu: online gelöschte Dateien verschwinden spätestens nach 5 Minuten auch lokal, zuverlässiges Wiederverbinden nach einem Netzausfall.

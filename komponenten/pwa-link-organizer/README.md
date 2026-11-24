@@ -27,7 +27,8 @@ offen, blitzt dafür kurz eines auf und schliesst sich gleich wieder.
 
 **Bleibt in Chrome** (wird nicht abgefangen):
 
-- neue App-Fenster, z. B. eine Mail im eigenen Fenster (Pop-out),
+- neue App-Fenster, z. B. eine Mail im eigenen Fenster (Pop-out, Doppelklick) –
+  Links *in* diesem Mail-Fenster gehen aber wie in der Vorschau an Edge,
 - Pop-up-Fenster, z. B. Anmeldung oder Add-in-Dialoge,
 - Outlook-Adressen und Anhänge (`outlook.cloud.microsoft`, `outlook.office.com`,
   `outlook.office365.com`, `outlook.live.com`, `*.office.net`),
@@ -83,6 +84,15 @@ Solange in der Erweiterung nichts gewählt ist, gilt `~/.config/edge-links/confi
 ```json
 { "profile": "Default" }
 ```
+
+## Wenn ein Link doch in Chrome aufgeht
+
+Unten in den Einstellungen steht unter **Letzte Entscheidungen**, was die
+Erweiterung mit den letzten 50 neuen Tabs gemacht hat. Jeder Eintrag zeigt die Zeit,
+nur den Hostnamen (keine Adressen) und den Grund, z. B. «an Edge übergeben»,
+«Fenster «popup» – bleibt in Chrome» oder «Prüfung fehlgeschlagen». Fehlt zu einem
+Klick in Outlook jeder Eintrag, hat Chrome der Erweiterung den neuen Tab gar nicht
+gemeldet. **Protokoll leeren** löscht die Liste.
 
 ## Aktualisieren und entfernen
 

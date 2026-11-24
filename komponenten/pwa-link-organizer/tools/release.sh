@@ -42,6 +42,7 @@ if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
 fi
 
 python3 -m unittest -q tests/test_host.py
+node tests/test_background.js
 
 mkdir -p dist
 git archive --format=tar.gz --prefix="$NAME/" -o "dist/$NAME.tar.gz" HEAD

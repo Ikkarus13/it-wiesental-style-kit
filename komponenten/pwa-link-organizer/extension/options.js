@@ -71,6 +71,59 @@ list.addEventListener('change', async () => {
   }
 });
 
+// ---------- Entscheidungsprotokoll (schreibt background.js) ----------
+const logList = document.getElementById('log');
+
+function when(t) {
+  const d = new Date(t);
+  const time = d.toLocaleTimeString('de-CH');
+  return d.toDateString() === new Date().toDateString()
+    ? time : `${d.toLocaleDateString('de-CH', { day: '2-digit', month: '2-digit' })} ${time}`;
+}
+
+function showLog(log) {
+  const items = Array.isArray(log) ? log.slice().reverse() : [];
+  logList.replaceChildren();
+  if (!items.length) {
+    const li = document.createElement('li');
+    li.className = 'empty';
+    li.textContent = 'Noch keine Einträge.';
+    logList.append(li);
+    return;
+  }
+  for (const item of items) {
+    const li = document.createElement('li');
+    const time = document.createElement('span');
+    time.className = 'time';
+    time.textContent = when(item.t);
+    const host = document.createElement('span');
+    host.className = 'host';
+    host.textContent = item.host || '–';
+    const why = document.createElement('span');
+    why.className = item.why && item.why.startsWith('an Edge') ? 'why edge' : 'why';
+    const extra = [];
+    if (typeof item.ms === 'number') extra.push(`${item.ms} ms nach dem Öffnen`);
+    if (item.tries) extra.push(`${item.tries}× nachgefragt`);
+    why.textContent = String(item.why || '') + (extra.length ? ` (${extra.join(', ')})` : '');
+    li.append(time, host, why);
+    logList.append(li);
+  }
+}
+
+chrome.storage.local.get('log').then(({ log }) => showLog(log));
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local' && changes.log) showLog(changes.log.newValue);
+});
+
+document.getElementById('clear').addEventListener('click', async () => {
+  try {
+    await chrome.storage.local.remove('log');
+    say('Protokoll geleert.');
+  } catch (e) {
+    say(`Protokoll nicht geleert: ${e.message}`, true);
+  }
+});
+
 tryButton.addEventListener('click', async () => {
   let reply;
   try {

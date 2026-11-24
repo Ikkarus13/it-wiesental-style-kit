@@ -59,6 +59,7 @@ MAIL_PAGE = """<!doctype html><html><head><meta charset=utf-8><title>Outlook (Te
 <a id=t15 href="https://www.example.org/t15" target="_blank">t15 zuletzt benutztes Profil</a>
 <a id=t16 href="https://outlook.cloud.microsoft/redirect?to=https%3A%2F%2Flogin.microsoftonline.com%2Fredirect%3Fto%3Dhttps%253A%252F%252Fwww.example.org%252Fadfs%252Fls%252F%253FSAMLRequest%253Dt16" target="_blank">t16 Outlook → Anmeldung → fremde Anmeldeseite</a>
 <a id=t17 href="https://outlook.cloud.microsoft/keep/t17" target="_blank">t17 Outlook-Seite im Tab, danach Adresse eingetippt</a>
+<button id=t18 onclick="var w=window.open('','mail18','width=640,height=480');w.document.write('<title>Mail t18</title><p>Mail</p><a id=l18 href=&quot;https://www.example.org/t18&quot; target=_blank>Link in der Mail</a>');w.document.close()">t18 Mail im eigenen Fenster (Doppelklick)</button>
 </body></html>"""
 
 EXTERN_PAGE = """<!doctype html><title>Fremde Seite</title>
@@ -353,12 +354,12 @@ class Run:
         if not ok:
             self.failures.append(name)
 
-    def expect_edge(self, tid, elem=None, button="left", url=None, line=None, wait=8):
+    def expect_edge(self, tid, elem=None, button="left", url=None, line=None, wait=8, session=None):
         """line: erwarteter Edge-Aufruf (Argumente), sonst nur die URL am Ende."""
         url = url or f"https://www.example.org/{tid}"
         before = len(self.edge_calls())
         t0 = time.time()
-        self.click(elem or tid, button)
+        self.click(elem or tid, button, session=session)
         t1 = time.time()
         got = wait_for(lambda: [c for c in self.edge_calls()[before:] if c.split(" ")[-1] == url], wait, 0.05)
         dt = time.time() - t1
@@ -378,6 +379,50 @@ class Run:
         self.check(f"{tid} bleibt in Chrome", bool(ok), f"(Tabs {tabs}, Edge-Aufrufe {self.edge_calls()[before:]})")
         if not self.args.keep:
             self.cleanup_tabs()
+
+    def stored_log(self):
+        return self.eval(self.sw, "chrome.storage.local.get('log').then(r => r.log || [])") or []
+
+    def log_tests(self):
+        """Entscheidungsprotokoll: ein Eintrag je Entscheidung, nur Hostnamen."""
+        time.sleep(1.0)
+        log = self.stored_log()
+
+        def has(why, host=None):
+            return any(e.get("why", "").startswith(why) and (host is None or e.get("host") == host) for e in log)
+
+        for name, ok in [
+            ("an Edge übergeben", has("an Edge übergeben", "www.example.org")),
+            ("Pop-up-Fenster (t4)", has("Fenster «popup»", "login.microsoftonline.com")),
+            ("Microsoft-Anmeldung (t6)", has("Microsoft-Anmeldung", "login.microsoftonline.com")),
+            ("fremde Anmeldeseite (t16)", has("fremde Anmeldeseite", "www.example.org")),
+            ("Outlook-Seite abgelaufen (t17)", has("Zeit abgelaufen", "outlook.cloud.microsoft")),
+            ("Edge-Fehler (t11)", has("Edge-Fehler", "www.example.org")),
+            ("Quelle nicht Outlook (t8)", has("Quelle nicht Outlook (www.example.org)", "")),
+            ("Mail-Fenster gemerkt (t18)", any("Links darin gehen an Edge" in e.get("why", "")
+                                               and e.get("host") == "about:blank" for e in log)),
+        ]:
+            self.check(f"Protokoll: {name}", ok)
+        clean = all("/" not in e.get("host", "") and set(e) <= {"t", "host", "why", "ms", "tries"} for e in log)
+        self.check("Protokoll ohne Adressen, höchstens 50 Einträge", clean and 0 < len(log) <= 50,
+                   f"({len(log)} Einträge)")
+
+        opts = f"chrome-extension://{self.ext_id}/options.html"
+        t = self.cdp.call("Target.createTarget", {"url": opts})
+        s = self.cdp.call("Target.attachToTarget", {"targetId": t["targetId"], "flatten": True})["sessionId"]
+        rows = wait_for(lambda: self.eval(s, "document.querySelectorAll('#log li:not(.empty)').length"), 10)
+        first = self.eval(s, "(document.querySelector('#log li')||{}).innerText||''").replace("\n", " ")
+        self.check("Einstellungen zeigen das Protokoll", rows == len(log), f"({rows} Zeilen, neueste: {first!r})")
+        if self.args.shot:
+            shot = self.cdp.call("Page.captureScreenshot", {"format": "png", "captureBeyondViewport": True},
+                                 session=s)["data"]
+            with open(os.path.splitext(self.args.shot)[0] + "-protokoll.png", "wb") as f:
+                f.write(base64.b64decode(shot))
+        self.click("clear", session=s)
+        emptied = wait_for(lambda: not self.stored_log()
+                           and self.eval(s, "!!document.querySelector('#log li.empty')"), 5)
+        self.check("«Protokoll leeren» leert das Protokoll", bool(emptied))
+        self.cdp.call("Target.closeTarget", {"targetId": t["targetId"]})
 
     def profile_tests(self):
         """Einstellungsseite: Profile aus Edges «Local State», Wahl geht mit jedem Link mit."""
@@ -447,6 +492,19 @@ class Run:
         self.check("t17 eingetippte Adresse bleibt in Chrome", bool(tabs) and not self.edge_calls()[before:],
                    f"(Tabs {tabs}, Edge-Aufrufe {self.edge_calls()[before:]})")
         self.cleanup_tabs()
+        # Mail per Doppelklick: Outlook öffnet ein leeres Pop-up-Fenster und schreibt
+        # die Mail hinein (bleibt about:blank) – ein Link darin muss trotzdem an Edge
+        self.click("t18")
+        mail = wait_for(lambda: next((t for t in self.cdp.call("Target.getTargets")["targetInfos"]
+                                      if t["type"] == "page" and t["title"] == "Mail t18"), None), 5)
+        if not mail:
+            self.check("t18 Mail-Fenster geöffnet", False)
+        else:
+            ms = self.cdp.call("Target.attachToTarget", {"targetId": mail["targetId"], "flatten": True})["sessionId"]
+            time.sleep(0.5)
+            wid = self.cdp.call("Browser.getWindowForTarget", {"targetId": mail["targetId"]})["windowId"]
+            print(f"  (t18 Mail-Fenster: {self.window_types().get(wid)}, {mail['url']})")
+            self.expect_edge("t18", elem="l18", session=ms)
         # Edge meldet Fehler → Link wird doch in Chrome geöffnet
         before = len(self.edge_calls())
         self.click("t11")
@@ -475,6 +533,7 @@ class Run:
         wait_for(lambda: self.eval(s, "document.readyState") == "complete", 10)
         self.expect_chrome("t8", "www.example.org/t8", session=s)
 
+        self.log_tests()
         self.profile_tests()
 
         print("Fenster am Ende:", self.windows())

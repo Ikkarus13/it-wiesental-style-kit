@@ -10,7 +10,8 @@
 //
 // Nicht angefasst werden:
 //  - neue App-Fenster (Pop-out einer Mail) und Pop-up-Fenster (Anmeldung,
-//    Add-in-Dialoge) – nur Tabs in normalen Browserfenstern zählen;
+//    Add-in-Dialoge) – nur Tabs in normalen Browserfenstern zählen; Links aus
+//    einem leeren Mail-Fenster von Outlook (Doppelklick) zählen wie aus Outlook;
 //  - Outlook-eigene Adressen und die Microsoft-Anmeldung (KEEP_HOSTS);
 //  - Tabs, die leer bleiben oder per document.write gefüllt werden (Drucken).
 
@@ -56,8 +57,95 @@ function isSignIn(u) {
     || /\/adfs\//i.test(u.pathname);
 }
 
-// tabId → { url, http, viaKeep, ready, sourceWindowId, timer }
+// Fenster des neuen Tabs ist evtl. noch nicht fertig (Chrome legt es gerade an):
+// so oft und so lange nachfragen, statt gleich aufzugeben.
+const RETRIES = 5;
+const RETRY_MS = 150;
+
+// tabId → { url, http, viaKeep, ready, sourceWindowId, timer, created, tries }
 const watched = new Map();
+
+// ---------- Entscheidungsprotokoll ----------
+// Die letzten Entscheidungen stehen in chrome.storage.local «log» (nur Hostnamen,
+// keine Adressen) und in den Einstellungen. So lässt sich nachsehen, warum ein
+// Link doch in Chrome aufging. Kein Eintrag zu einem Klick = Chrome hat der
+// Erweiterung den neuen Tab gar nicht gemeldet.
+const LOG_MAX = 50;
+let logChain = Promise.resolve();
+
+function hostOf(url) {
+  const u = parse(url || '');
+  if (!u) return '';
+  if (u.protocol === 'http:' || u.protocol === 'https:') return u.hostname;
+  return u.protocol === 'about:' ? u.href : u.protocol.replace(':', '');
+}
+
+function note(entry, why, url) {
+  const item = { t: Date.now(), host: url === null ? '' : hostOf(url ?? (entry && entry.url)), why };
+  if (entry) {
+    item.ms = item.t - entry.created;
+    if (entry.tries) item.tries = entry.tries;
+  }
+  // nacheinander schreiben, sonst überschreiben sich gleichzeitige Einträge
+  logChain = logChain.then(async () => {
+    const { log } = await chrome.storage.local.get('log');
+    const list = Array.isArray(log) ? log : [];
+    list.push(item);
+    await chrome.storage.local.set({ log: list.slice(-LOG_MAX) });
+  }).catch(e => console.warn('PWA link organizer: Protokoll nicht geschrieben:', e.message));
+}
+
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+// ---------- Mail-Fenster von Outlook ----------
+// Öffnet man eine Mail per Doppelklick, öffnet Outlook ein leeres Pop-up-Fenster
+// (about:blank) und schreibt die Mail selbst hinein. Das Fenster hat nie eine
+// Outlook-Adresse, Links darin kämen also aus einer «fremden» Quelle. Deshalb
+// merkt sich die Erweiterung solche Fenster (chrome.storage.session übersteht das
+// Schlafen des Service Workers, nicht aber einen Chrome-Neustart) und behandelt
+// Links darin wie Links aus Outlook – solange das Fenster leer/Outlook bleibt.
+let childChain = Promise.resolve();
+
+async function outlookChildren() {
+  const { outlookChildren: list } = await chrome.storage.session.get('outlookChildren');
+  return Array.isArray(list) ? list : [];
+}
+
+function updateChildren(change) {
+  childChain = childChain.then(async () => {
+    const list = await outlookChildren();
+    const next = change(list);
+    if (next) await chrome.storage.session.set({ outlookChildren: next.slice(-50) });
+  }).catch(e => console.warn('PWA link organizer: Mail-Fenster nicht gemerkt:', e.message));
+  return childChain;
+}
+
+const rememberChild = tabId => updateChildren(list => (list.includes(tabId) ? null : [...list, tabId]));
+const forgetChild = tabId => updateChildren(list => (list.includes(tabId) ? list.filter(id => id !== tabId) : null));
+
+// leer (about:blank) oder Outlook-Adresse
+function blankOrOutlook(url) {
+  const u = parse(url || 'about:blank');
+  return !u || u.protocol === 'about:' || isOutlook(url);
+}
+
+// Adresse des Hauptrahmens eines Tabs – webNavigation nennt sie auch ohne Rechte
+// für die Seite (chrome.tabs.get liefert url nur für Outlook-Adressen).
+async function frameUrl(tabId) {
+  try {
+    const frame = await chrome.webNavigation.getFrame({ tabId, frameId: 0 });
+    return frame ? frame.url : '';
+  } catch {
+    return '';
+  }
+}
+
+// Kommt der Klick aus Outlook? Outlook selbst oder ein gemerktes Mail-Fenster.
+async function fromOutlook(source) {
+  if (isOutlook(source.url)) return true;
+  if (!(await outlookChildren()).includes(source.id)) return false;
+  return blankOrOutlook(await frameUrl(source.id));
+}
 
 function hostMatches(host, list) {
   return list.some(h => host === h || host.endsWith('.' + h));
@@ -92,7 +180,11 @@ function unwatch(tabId) {
 // Beobachtung (neu) befristen
 function arm(tabId, entry, ms) {
   clearTimeout(entry.timer);
-  entry.timer = setTimeout(() => unwatch(tabId), ms);
+  entry.timer = setTimeout(() => {
+    if (watched.get(tabId) !== entry) return;
+    if (entry.ready) note(entry, 'Zeit abgelaufen – bleibt in Chrome');
+    unwatch(tabId);
+  }, ms);
 }
 
 // Neue Adresse des Tabs merken
@@ -111,26 +203,68 @@ chrome.webNavigation.onCreatedNavigationTarget.addListener(details => {
   // Sofort eintragen, damit eine schnelle Folgenavigation (about:blank → Ziel)
   // nicht verloren geht, während unten noch geprüft wird.
   unwatch(details.tabId);
-  const entry = { url: '', http: false, viaKeep: false, ready: false, sourceWindowId: undefined, timer: 0 };
+  const entry = { url: '', http: false, viaKeep: false, ready: false, sourceWindowId: undefined,
+                  timer: 0, created: Date.now(), tries: 0 };
   arm(details.tabId, entry, BLANK_MS);
   track(details.tabId, entry, details.url);
   watched.set(details.tabId, entry);
   qualify(details.tabId, details.sourceTabId, entry);
 });
 
+// fn() liefert das Ergebnis oder undefined (= noch nicht so weit); Fehler und
+// undefined werden kurz wiederholt, solange der Tab noch beobachtet wird.
+async function retry(tabId, entry, fn) {
+  let error = new Error('keine Antwort');
+  for (let i = 0; i <= RETRIES; i++) {
+    if (i) {
+      entry.tries++;
+      await sleep(RETRY_MS);
+      if (watched.get(tabId) !== entry) return undefined; // Tab zu oder ersetzt
+    }
+    try {
+      const value = await fn();
+      if (value !== undefined) return value;
+    } catch (e) {
+      error = e;
+    }
+  }
+  throw error;
+}
+
 async function qualify(tabId, sourceTabId, entry) {
   try {
-    const source = await chrome.tabs.get(sourceTabId);
-    if (!isOutlook(source.url)) return unwatch(tabId);
-    const tab = await chrome.tabs.get(tabId);
-    const win = await chrome.windows.get(tab.windowId);
-    if (win.type !== 'normal') return unwatch(tabId);
-    if (watched.get(tabId) !== entry) return;
+    if (!(sourceTabId >= 0)) {
+      note(entry, 'Quelle unbekannt – bleibt in Chrome', null);
+      return unwatch(tabId);
+    }
+    const source = await retry(tabId, entry, () => chrome.tabs.get(sourceTabId));
+    if (!source) return;
+    // Ohne Rechte für die Quellseite ist source.url leer → keine Outlook-Seite
+    if (!(await fromOutlook(source))) {
+      const from = hostOf(await frameUrl(sourceTabId)) || '?';
+      note(entry, `Quelle nicht Outlook (${from}) – bleibt in Chrome`, null);
+      return unwatch(tabId);
+    }
+    const win = await retry(tabId, entry, async () => {
+      const tab = await chrome.tabs.get(tabId);
+      if (tab.windowId === undefined || tab.windowId < 0) return undefined; // noch ohne Fenster
+      return chrome.windows.get(tab.windowId);
+    });
+    if (!win || watched.get(tabId) !== entry) return;
+    if (win.type !== 'normal') {
+      // Leeres oder Outlook-eigenes Fenster (Mail per Doppelklick, Pop-out):
+      // Links darin sollen später auch an Edge gehen. Anmelde-/Add-in-Fenster nicht.
+      const child = blankOrOutlook(entry.url);
+      if (child) await rememberChild(tabId);
+      note(entry, `Fenster «${win.type}» – bleibt in Chrome${child ? ', Links darin gehen an Edge' : ''}`);
+      return unwatch(tabId);
+    }
     entry.sourceWindowId = source.windowId;
     entry.ready = true;
     consider(tabId, entry);
-  } catch {
-    unwatch(tabId); // Tab schon wieder zu o. Ä.
+  } catch (e) {
+    if (watched.get(tabId) === entry) note(entry, `Prüfung fehlgeschlagen (${e.message}) – bleibt in Chrome`);
+    unwatch(tabId);
   }
 }
 
@@ -156,27 +290,38 @@ chrome.action.onClicked.addListener(() => chrome.runtime.openOptionsPage());
 chrome.webNavigation.onBeforeNavigate.addListener(onNavigation);
 chrome.webNavigation.onCommitted.addListener(onNavigation); // nach Server-Weiterleitungen
 chrome.webNavigation.onCompleted.addListener(onCompleted);
-chrome.tabs.onRemoved.addListener(unwatch);
+chrome.tabs.onRemoved.addListener(tabId => {
+  unwatch(tabId);
+  forgetChild(tabId);
+});
 
 function consider(tabId, entry) {
   const u = parseHttp(entry.url);
   if (!u) return; // about:blank: abwarten
-  if (hostMatches(u.hostname, LOGIN_HOSTS)) return unwatch(tabId);
+  if (hostMatches(u.hostname, LOGIN_HOSTS)) {
+    note(entry, 'Microsoft-Anmeldung – bleibt in Chrome');
+    return unwatch(tabId);
+  }
   if (hostMatches(u.hostname, KEEP_HOSTS)) return; // Outlook-intern: evtl. folgt eine Weiterleitung
   // Server-Weiterleitungen dazwischen sieht die Erweiterung nicht – über Outlook und
   // die Microsoft-Anmeldung bei einer fremden Anmeldeseite gelandet: in Chrome lassen.
-  if (entry.viaKeep && isSignIn(u)) return unwatch(tabId);
+  if (entry.viaKeep && isSignIn(u)) {
+    note(entry, 'fremde Anmeldeseite – bleibt in Chrome');
+    return unwatch(tabId);
+  }
   unwatch(tabId);
-  handOver(tabId, entry.url, entry.sourceWindowId);
+  handOver(tabId, entry);
 }
 
-async function handOver(tabId, url, sourceWindowId) {
+async function handOver(tabId, entry) {
+  const { url, sourceWindowId } = entry;
   let windowId;
   try {
     windowId = (await chrome.tabs.get(tabId)).windowId;
     await chrome.tabs.remove(tabId);
   } catch {
-    return; // Tab inzwischen geschlossen
+    note(entry, 'Tab schon geschlossen');
+    return;
   }
   // Bleibt das Browserfenster offen (es hatte noch andere Tabs), steht es jetzt
   // vor Outlook – Outlook wieder nach vorn holen, danach kommt Edge darüber.
@@ -196,7 +341,10 @@ async function handOver(tabId, url, sourceWindowId) {
   } catch (e) {
     reply = { ok: false, error: e.message };
   }
-  if (!reply || !reply.ok) {
+  if (reply && reply.ok) {
+    note(entry, 'an Edge übergeben');
+  } else {
+    note(entry, `Edge-Fehler (${reply && reply.error}) – in Chrome geöffnet`);
     console.warn('PWA link organizer: Edge nicht erreichbar, Link bleibt in Chrome:', reply && reply.error);
     // nichts verlieren – notfalls in einem neuen Fenster
     chrome.tabs.create({ url })

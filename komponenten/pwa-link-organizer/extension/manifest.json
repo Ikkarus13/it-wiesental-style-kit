@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "PWA link organizer",
-  "version": "1.2.1",
+  "version": "1.2.3",
   "description": "Öffnet Links aus der Outlook-App in Microsoft Edge statt in einem Chrome-Tab (lokal über einen Native-Messaging-Host).",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvedKK4Qu/vOEXZKjYcn8tIuZ+FSQJ5aQ8ZXUc9DpcI/6aYMM6+PtPjWo9zbvsAiCEobJSqpk2JweqK2e5CG4JrUw512UYpabBmozhua3lwSZZZr9vjH7NVPkuqocffOcfQKekCYhN4tI2jUguuUr8Y3ZB6HBer9opDjQjtrs25sYXbJKBlKerkf3NW6je+SGc4+IUpkW7LxdD4CR/d3kzs+i6NIfrJmQFgcI0iC4tM/3SazRpPxQUvjWM5K+sJ2bzdNY8bIYcoAZ6ZmcyyLzAEIg7/kgNAg4p+bG4EjBskPz2Cbr8+rlPw9JsiUr4I3qNR+lbxk8qJzstsXZVWXYRwIDAQAB",
   "minimum_chrome_version": "116",
